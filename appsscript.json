@@ -2,5 +2,8 @@
   "timeZone": "Europe/Bucharest",
   "dependencies": {
   },
-  "exceptionLogging": "STACKDRIVER"
+  "exceptionLogging": "STACKDRIVER",
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/script.external_request"
+  ]
 }

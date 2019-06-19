@@ -292,9 +292,6 @@ function testaddPaProject() {
   Logger.log(addPaProject("pa2", "PROJ123"))
 }
 
-function testArith() {
-  Logger.log(72.33333333333334 - 72.33333333333334 * .2)
-  }
   
 function testgetPaProjects() {
   var pp = getPaProjects()
@@ -314,50 +311,8 @@ function testSaveStudent() {
   saveStudent(student, student.row);
 }
 
-function testGetGroupCompare() {
-  var old = JSON.stringify(getGroupOld("xx@xx.com"));
-  var newD = JSON.stringify(getGroup("xx@xx.com"));
-//  var newD = JSON.stringify(getStudents()
-//  .filter(function (s) {
-//    return s.projectkey == "PROJ123"
-//    })
-//  );
-  if( old != newD) {
-    Logger.log("FAILED");
-  }
-  Logger.log(old)
-  Logger.log(newD)
-}
 
-function testGetStudentsCompare() {
-  var old = JSON.stringify(getStudentsOld("PROJ456"));
-  var newD = JSON.stringify(getStudents("PROJ456"));
-//  var newD = JSON.stringify(getStudents()
-//  .filter(function (s) {
-//    return s.projectkey == "PROJ123"
-//    })
-//  );
-  if( old != newD) {
-    Logger.log("FAILED");
-  }
-  Logger.log(old)
-  Logger.log(newD)
-}
 
-function testGetStudentEMAILCompare() {
-  var old = JSON.stringify(getStudentOld("xx@xx.com"));
-  var newD = JSON.stringify(getStudent("xx@xx.com"));
-//  var newD = JSON.stringify(getStudents()
-//  .filter(function (s) {
-//    return s.projectkey == "PROJ123"
-//    })
-//  );
-  if( old != newD) {
-    Logger.log("FAILED");
-  }
-  Logger.log(old)
-  Logger.log(newD)
-}
 
 
 function testgetReminderTime() {
@@ -371,8 +326,3 @@ function testnumStudentsSubmitted() {
   Logger.log(n)
 }
 
-function testtoLowerCase() {
-  var email = "SomeEmail@gmail.COM"
-  var email = email.toLowerCase();
-  Logger.log(email)
-}

@@ -1,0 +1,89 @@
+ISSUES
+---------
+
+Self -assessment results? Check!
+
+No of Submitted students should move from Projects to Grades sheet.
+
+
+
+FEATURES
+-----------
+
+Send weekly report of submission, user actions, approaching deadlines etc
+
+Identify Strong areas, weak areas for students after peer assessment.
+
+Add warnings onEdit (e.g. not found project key, not found peer assessment key, invalid email, etc. )
+
+
+
+IMPROVEMENTS
+------------
+
+Improve model by using object-sheet mapping (separate project) (WORKING - most code refactored)
+
+Format the results
+
+Code review: Identify private functions. Clean unused function. Write comments. Delete unnecessary logs.
+
+
+#####################################################################################
+
+DONE
+-----
+
+Add textual comments in the peer assessment
+
+Option to use google domain accounts to avoid account verification and student personal keys.
+
+Add in Settings the reminder relative dates (e.g. 1 day before, 3 days before)
+
+In students Sheet instead of TRUE for each peer assessment save the URL view of response. NOT DONE because it can be saved by the person viewing it. 
+THere is no way to have a VIEW only responseform.
+
+Update SUBMITTED field at student
+
+Add reminder email for non-submission
+
+Send email to students who have not confirmed their registration. 
+Some of them might have been manually added.
+
+Add deadline. After that peer assessment closes. NO more responses.
+
+Show number of students next to project AND number of peer assessment submitted
+
+Change the deadline and the related triggers after opening the peer assessment
+
+Add settings in the model to remove hard ranges.
+
+Multiple peer assessments for one project
+
+IN Students form there is a SUBMITTED field. 
+This refers to current assessment. Move? Add one col for assessment?
+
+Change email messages concerning Peer Assessment to include pa name.
+
+Fill in Settings sheet when created
+
+For peer assessment change false false to Inactive, false true to Open etc.
+
+Close assessment. Send feedback to students. 
+
+Performance: Replace getValue with getValues or DataRange
+
+
+FIXED
+------
+Sending reminder to non submission should be reading student pa columns.
+
+DOES NOT find EditURL due to null FormResponse (enames/sheet different timestamps. Get from sheet)
+
+There is an issues with multiple peer assessments and Open. 
+The problem is probably related to the form id stored in Projects sheet.
+FORM ID should move from Projects to Grades sheet.
+
+Change deadlines does not check if new deadline is in the past
+
+Msg update deadlines should appear only when the assessment 
+is inactive (not when open or closed or finished)

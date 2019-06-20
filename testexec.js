@@ -27,37 +27,6 @@ function testAllFunctionDiff() {
 
 
 
-function testGetGroup1() {
-  var act = getGroup("ko@xx.com");
-  var exp = "PROJ456";
-  if (act != exp) 
-    Logger.log("testGetGroup_: Expected " + exp + " got " + act);
-}
-
-function testIsProjectkey() {
-  var act = isProjectkey("PROJ123");
-  var exp = true;
-  if (act != exp) 
-    Logger.log("testIsProjectkey: Expected " + exp + " got " + act);
-}
-
-function testGetStudents() {
-  var act = getStudents("PROJ123");
-  for(i=0; i < act.length; i++)
-      Logger.log("testGetStudents: " + act[i].email);
-}
-
-function testgetStudent() {
-  Logger.log(getStudent("dranidis@citycollege.sheffield.eu"))
-}
-  
-function testGetStudents1() {
-  var act = getStudents("PROJ456");
-  Logger.log(act);
-  for(i=0; i < act.length; i++)
-      Logger.log("testGetStudents: " + act[i].email);
-}
-
 function testGetQuestions() {
   var act = getQuestions();
   for(i=0; i < act.length; i++)

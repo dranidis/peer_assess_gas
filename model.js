@@ -288,6 +288,13 @@ Projects
 
 PROJECTS_FIRST_ROW = 2
 
+function addProject(proj) {
+  var ss = SpreadsheetApp.getActive().getSheetByName(PROJECTS.sheet);
+  ss.appendRow(
+    [proj.name, proj.key]
+  )
+}
+
 function getProjects() {
   var i = PROJECTS_FIRST_ROW;
   return getData_(PROJECTS).map(function(p) {

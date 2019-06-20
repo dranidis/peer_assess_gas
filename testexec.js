@@ -26,12 +26,6 @@ function testAllFunctionDiff() {
 
 
 
-function testGetGroup() {
-  var act = getGroup("dranidis@gmail.com");
-  var exp = "PROJ123";
-  if (act != exp) 
-    Logger.log("testGetGroup_: Expected " + exp + " got " + act);
-}
 
 function testGetGroup1() {
   var act = getGroup("ko@xx.com");

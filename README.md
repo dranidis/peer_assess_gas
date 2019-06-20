@@ -1,11 +1,14 @@
 # peer_assess_gas
 A peer assessment tool written in Google App Script
 
-## How to install to a new Google spreadsheet
+## How to install the script to a new Google spreadsheet
 
 **Prerequisite:** clasp https://developers.google.com/apps-script/guides/clasp
 
 Clone the script project in a local folder.
+```
+git clone https://github.com/dranidis/peer_assess_gas.git
+```
 
 Create a new Google spreadsheet and click Tools-> Script editor
 
@@ -19,7 +22,7 @@ Locally, go to the directory where you have the script project. Create a .clasp.
 {"scriptId":"xxxxxxxxxxxxxxxx"}
 ```
 
-Paste the new Script ID.
+Paste the new Script ID and execute:
 
 
 ```
@@ -35,7 +38,7 @@ the Apps Script API by visiting
 https://script.google.com/home/usersettings 
 Click on Off and enable it to On.
 
-
+Execute:
 ```
 clasp push
 ```

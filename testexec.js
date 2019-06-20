@@ -33,36 +33,8 @@ function testGetQuestions() {
       Logger.log("testGetQuestions: " + act[i]);
 }
 
-function testgetProjects() {
-  var act = getProjects();
-  for(i=0; i < act.length; i++)
-      Logger.log("testgetProjects: " + act[i].data.name + " " + act[i].data.key);
-}
-
-function testgetNextProject() {
-  Logger.log("testgetNextProject: " + getNextProject().key + " " + getNextProject().key + " " + getNextProject().key);
-}
-
-function testSpreadsheetAppgetActiveSheetgetFormUrl() {
-  var url = SpreadsheetApp.getActiveSheet().getFormUrl();
-  Logger.log(url)
-}
-
 function testGetProjectkeyFromFormId() {
   Logger.log(getProjectkeyFromFormId("1z4zsCIVv7QC_3wg3TE97WQsOYwg_BHVse3Fo3SuIbFk")); 
-}
-
-
-function testGetFormResponses() {
-  var responses = getFormResponses("1Q9J10jrPGLHclSg8s5Me1HaoXpooXpynOoeDHDW6JPk")
-  for (var i = 0; i < responses.length; i++) {
-    for (var j = 0; j < responses[i].length; j++) {
-      var itemResponse = responses[i][j];
-      Logger.log('"%s":  "%s"',
-                 itemResponse.getItem().getTitle(),
-                 itemResponse.getResponse());
-    }
-  }
 }
 
 
@@ -83,16 +55,6 @@ function testGetPAresults() {
 function testSort() {
   var sheet = SpreadsheetApp.getActive().getSheetByName("Students") 
   sheet.getDataRange().sort([{column: 4, ascending: true}, {column: 2, ascending: true}])
-}
-
-function testCalculateGrade() {
-  var grade = calculateGrade(80, 0.41, .5, .1)
-  Logger.log(grade);
-}
-
-function testCalculateGrade1() {
-  var grade = calculateGrade(70, 1.05, .7, .2)
-  Logger.log(grade);
 }
 
 function testSetAcceptingResponses() { 
@@ -139,15 +101,6 @@ function testOPenPAsetTRUE() {
   finishPeerAssessment(1, false);
 }
 
-function testDisableMenu() {
-// you can only remove a menu.
-  SpreadsheetApp.getActive().removeMenu(name);
-}
-
-function testsetStudentsSubmitted() {
-  setStudentsSubmitted(true);
-}
-
 function processTest() {
   var projectkey = "PROJ123"
   var questions = getQuestions();
@@ -159,19 +112,6 @@ function processTest() {
       Logger.log(string)
     }
   }
-}
-
-function testcompareDates() {
-   var deadline = new Date("5/26/2019 22:45:00");
-   if (deadline.getTime() < (new Date()).getTime()) {
-     Logger.log("past");
-   }
-
-}
-
-function testHideSheet() {
-   sh = SpreadsheetApp.getActive().getSheetByName("PA PROJ456 responses")
-  sh.hideSheet();
 }
 
 function testgetGroupGrade() {

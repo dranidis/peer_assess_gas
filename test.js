@@ -16,10 +16,12 @@ if ((typeof GasTap) === 'undefined') { // GasT Initialization. (only if not init
 var test = new GasTap()
 
 function gastTestRunner() {
+  testgetProjects();
   testGetGroup();
   testIsProjectkey();
   testGetStudents();
   testGetStudent();
+  testCalculateGrade();
   test.finish();
 }
 
@@ -50,6 +52,21 @@ var testStudents = [
   }
 ];
 
+var testProjects = [
+  {
+    name: 'Project1',
+    key: 'PROJ123',
+  },
+  {
+    name: 'Project2',
+    key: 'proj2',
+  },
+  {
+    name: 'Project3',
+    key: 'proj3',
+  }
+];
+
 function preSetupStudents_() {
   var ss = SpreadsheetApp.getActive().getSheetByName(STUDENTS.sheet);
   ss.getDataRange().offset(1, 0).clearContent();
@@ -62,19 +79,19 @@ function preSetupProjects_() {
   var ss = SpreadsheetApp.getActive().getSheetByName(PROJECTS.sheet);
   ss.getDataRange().offset(1, 0).clearContent();
 
-  addProject({
-    name: 'Project1',
-    key: 'PROJ123',
-  });
+  for (var i = 0; i < testProjects.length; i++)
+    addProject(testProjects[i]);
+}
 
-  addProject({
-    name: 'Project2',
-    key: 'proj2',
-  });
+function testgetProjects() {
+  preSetupProjects_();
 
-  addProject({
-    name: 'Project3',
-    key: 'proj3',
+  test('getProjects', function (t) {
+    var act = getProjects();
+    for (i = 0; i < act.length; i++) {
+      t.equal(act[i].data.name, testProjects[i].name, 'getProjects name' + i);
+      t.equal(act[i].data.key, testProjects[i].key, 'getProjects key' + i);
+    }
   });
 }
 
@@ -136,5 +153,12 @@ function testGetStudent() {
   });
 }
 
-
+function testCalculateGrade() {
+  test('calculateGrade', function (t) {
+    var grade = calculateGrade(80, 0.41, .5, .1)
+    t.equal(grade, 50.76, 'calculateGrade a');
+    var grade = calculateGrade(70, 1.05, .7, .2)
+    t.equal(grade, 57.96, 'calculateGrade b');
+  });
+}
 

@@ -212,14 +212,6 @@ function getGroup(studentEmail) {
   return student.data.projectkey;
 }
 
-// function setStudentsSubmitted(enabled) {
-//   var ss = SpreadsheetApp.getActive().getSheetByName(STUDENTS.sheet);
-//   var last = ss.getLastRow()
-//   for (s = STUDENTS_FIRST_ROW; s <= last; s++) {
-//     ss.getRange(s, 7).setValue(enabled);
-//   }
-// }
-
 function studentsHeading() {
   var ss = SpreadsheetApp.getActive().getSheetByName(STUDENTS.sheet);
   var heading = ss.getRange(1, 1, 1, ss.getLastColumn()).getValues();

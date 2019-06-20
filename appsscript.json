@@ -1,12 +1,16 @@
 {
   "timeZone": "Europe/Bucharest",
-  "dependencies": {
-  },
+  "dependencies": {},
   "exceptionLogging": "STACKDRIVER",
   "oauthScopes": [
     "https://www.googleapis.com/auth/script.external_request",
-    "https://www.googleapis.com/auth/spreadsheets.currentonly",
+    "https://mail.google.com/",
+    "https://www.googleapis.com/auth/documents",
+    "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/forms",
-    "https://www.googleapis.com/auth/script.scriptapp"
+    "https://www.googleapis.com/auth/presentations",
+    "https://www.googleapis.com/auth/script.container.ui",
+    "https://www.googleapis.com/auth/script.scriptapp",
+    "https://www.googleapis.com/auth/spreadsheets"
   ]
 }

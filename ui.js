@@ -69,6 +69,19 @@ function openPAitem() {
     return;
   }
 
+  // TODO: CHECK if date is correctly entered
+  //
+  // try {
+  //   //var time = new Date(pa.dealine.getTime());
+  //   var time = pa.dealine.getTime();
+  // } catch (e) {
+  //   Browser.msgBox("Execution is aborted. Deadline: '" + pa.deadline + "' has not been properly entered.\n " +
+  //   e.message)
+  //   return;
+  // }
+
+  // //return;
+
 
   if (showAlertBeforeOpen_(pa)) {
     openPA(pa);

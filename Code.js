@@ -192,12 +192,22 @@ function sendReminderForConfirmation() {
 
 
 function processPAForProject_(peerass, project, newSheetName, settings, questions, final) {
-  var formId = getPaProject(peerass.id, project.data.key).data.formId;
+  var paProject = getPaProject(peerass.id, project.data.key);
+  if (paProject == null) {
+    Browser.msgBox("Peer assessment has not been opened for project " + project.data.name)
+    return;
+  }
+
+  var formId = paProject.data.formId;
   var projectkey = project.data.key;
 
   var self = settings.self;
   var weight = settings.weight;
   var penalty = settings.penalty;
+
+  if (isNaN(weight)) {
+    throw new Error("weight NaN")
+  }
 
   var debug = false;
   var pa = getPAresults(formId, projectkey, self, debug)

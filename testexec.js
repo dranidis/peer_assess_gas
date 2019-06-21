@@ -126,16 +126,7 @@ function testgetPAs() {
   }
 }
 
-function testAddstudent() {
-  var reg = {
-      fname:   "First",
-      lname: "Last", 
-      email: "mail@com", 
-      projectkey: "aProjKey",
-      personalkey: generateUniqueKey()
-    }
-  addStudent(reg)
-}
+
 
 
 function execGetFormId() {
@@ -145,10 +136,6 @@ function execGetFormId() {
   var form = FormApp.openByUrl(url)
   var id = form.getId();
   Logger.log(id);
-}
-
-function testsortStudents() {
-  sortStudents()
 }
 
 function execgetSettings() {

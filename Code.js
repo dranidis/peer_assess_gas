@@ -3,7 +3,8 @@
 Creates one form for each project and renames the gathering responses sheet including the project name.
 Enables filling the peer assessment till the deadline.
 Sends an email to students.
-Sends a reminder 3 days before and at the day of the deadline to those not submitted yet.
+Sends 2 reminder emails before the deadline to those not submitted yet.
+Reminder times/dates are defined at settings
 Closes the assessment form at the deadline.
 
 */
@@ -11,18 +12,19 @@ Closes the assessment form at the deadline.
 function openPA(pa) {
   var sp = SpreadsheetApp.getActive()
   var projects = getProjects();
+  var questions = getQuestions();
+  sortStudents(); // to make sure students to be assessed appear in the same order
+
   PropertiesService.getScriptProperties().setProperty("PA", pa.id)
 
   for (var i = 0; i < projects.length; i++) {
-    setUpPeerAssessmentForm_(pa, projects[i])
+    setUpPeerAssessmentForm_(pa, projects[i], questions);
   }
   ScriptApp.newTrigger('renameSheets').timeBased().after(2000).create(); // make less, check name?
 
-  setAcceptingResponsesForProjects(pa.id, true);
-
   createPATriggers_(pa)
 
-  setOpen(pa);
+  setState(pa, state.OPEN);
 }
 
 function renameSheets() {
@@ -51,7 +53,7 @@ function setNewDeadline(pa, value) {
   deletePATriggers();
   createPATriggers_(pa);
 
-  setOpen(pa);
+  setState(pa, state.OPEN);
 
   sendReminderToNonSubmissions(pa);
 }
@@ -101,7 +103,7 @@ function closePA(pa) {
   }
   sendEmailClosedToInstructor_(pa);
 
-  setClosed(pa);
+  setState(pa, state.CLOSED);
 }
 
 function deletePATriggers() {

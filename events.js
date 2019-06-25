@@ -1,25 +1,25 @@
-function getReminderTime(deadline, reminderIndex) {
-  const MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
-  const MILLS_PER_HOUR = 1000 * 60 * 60;
-  const MILLS_PER_MINUTE = 1000 * 60;
+var my_MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
+var my_MILLIS_PER_HOUR = 1000 * 60 * 60;
+var my_MILLIS_PER_MINUTE = 1000 * 60;
 
+function getReminderTime(deadline, reminderIndex) {
   const settings = getSettings();
   const x = settings['reminder' + reminderIndex];
 
   var unit = null;
   switch (settings.timeunit) {
     case 'min':
-      unit = MILLS_PER_MINUTE;
+      unit = my_MILLIS_PER_MINUTE;
       break;
     case 'hour':
-      unit = MILLS_PER_HOUR;
+      unit = my_MILLIS_PER_HOUR;
       break;
     case 'day':
-      unit = MILLIS_PER_DAY;
+      unit = my_MILLIS_PER_DAY;
       break;
     default:
       Logger.log("getReminderTime: Unknown timeunit in settings. Using day as unit")
-      unit = MILLIS_PER_DAY;
+      unit = my_MILLIS_PER_DAY;
   }
 
   return new Date(deadline.getTime() - x * unit);

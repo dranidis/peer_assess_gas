@@ -35,9 +35,9 @@ var testStudents = [
     verified: '',
   },
   {
-    fname: 'Some',
-    lname: 'Else',
-    email: 'else@citycollege.sheffield.eu',
+    fname: 'DD',
+    lname: 'Tomail',
+    email: 'ddtomail@gmail.com',
     projectkey: 'PROJ456',
     personalkey: '',
     verified: '',
@@ -59,13 +59,30 @@ var testProjects = [
   },
   {
     name: 'Project2',
-    key: 'proj2',
+    key: 'PROJ456',
   },
   {
     name: 'Project3',
-    key: 'proj3',
+    key: 'PROJ789',
   }
 ];
+
+var testPAs = [
+  {
+    name: "Peer Assessment 1",
+    id: "PA1",
+    deadline: new Date((new Date()).getTime() + 15 * my_MILLIS_PER_MINUTE),
+    state: ""
+  }
+]
+
+function preSetupPA() {
+  var ss = SpreadsheetApp.getActive().getSheetByName(PAS.sheet);
+  ss.getDataRange().offset(1, 0).clearContent();
+
+  for (var i = 0; i < testPAs.length; i++)
+    addPa(testPAs[i]);
+}
 
 function preSetupStudents_() {
   var ss = SpreadsheetApp.getActive().getSheetByName(STUDENTS.sheet);
@@ -99,7 +116,7 @@ function testIsProjectkey() {
   preSetupProjects_();
 
   test('isProjectkey', function (t) {
-    var isKey = isProjectkey("PROJ123");
+    var isKey = isProjectkey(testProjects[0].key);
     t.ok(isKey, 'isProjectkey')
   });
 
@@ -113,13 +130,8 @@ function testGetGroup() {
   preSetupStudents_();
 
   test('getGroup', function (t) {
-    var group = getGroup("dranidis@gmail.com");
-    t.equal(group, "PROJ123", 'getGroup first row')
-  });
-
-  test('getGroup', function (t) {
-    var group = getGroup("dranidis@citycollege.sheffield.eu");
-    t.equal(group, "PROJ123", 'getGroup last row')
+    var group = getGroup(testStudents[0].email);
+    t.equal(group, testStudents[0].projectkey, 'getGroup first row')
   });
 
   test('getGroup', function (t) {
@@ -132,7 +144,7 @@ function testGetStudents() {
   preSetupStudents_();
 
   test('getStudents', function (t) {
-    var act = getStudents("PROJ123");
+    var act = getStudents(testStudents[0].projectkey);
     t.equal(act[0].email, testStudents[0].email, 'getStudents 0')
     t.equal(act[1].email, testStudents[2].email, 'getStudents 2')
   });
@@ -162,3 +174,12 @@ function testCalculateGrade() {
   });
 }
 
+
+function testOpenPA() {
+  preSetupProjects_();
+  preSetupStudents_();
+  preSetupPA();
+
+  var pas = getPAs();
+  openPA(pas[0]);
+}

@@ -73,3 +73,16 @@ function generateUniqueKey() {
   return key;
 }
 
+function deleteAllSheetsWithForms() {
+  var sheets = SpreadsheetApp.getActive().getSheets();
+  for(var sh = 0; sh < sheets.length; sh++) {
+    var url = sheets[sh].getFormUrl()
+    if (url != null) {
+      var form = FormApp.openByUrl(url);
+      Logger.log("Sheet %s URL %s", sheets[sh].getName(), form.getId());
+      form.removeDestination();
+      SpreadsheetApp.getActive().deleteSheet(sheets[sh]);
+      DriveApp.getFileById(form.getId()).setTrashed(true);
+    }    
+  }
+}

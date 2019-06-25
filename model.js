@@ -313,6 +313,8 @@ Grades per pa, project
 
 PA_FIRST_ROW = 2
 
+
+
 function deletePALinks() {
   var sp = SpreadsheetApp.getActive().getSheetByName(PA_PROJECTS.sheet);
   var c1 = getSheetColumn_(PA_PROJECTS, "formId");
@@ -417,6 +419,13 @@ state = {
   FINALIZED: 'FINALIZED'
 }
 
+function addPa(reg) {
+  var ss = SpreadsheetApp.getActive().getSheetByName(PAS.sheet);
+  ss.appendRow(
+    [reg.name, reg.id, reg.deadline, reg.state]
+  )
+}
+
 function readPA(row) {
   var ss = SpreadsheetApp.getActive().getSheetByName(PAS.sheet);
   if (row > ss.getLastRow())
@@ -446,34 +455,12 @@ function getPA(paId) {
   return null;
 }
 
-function setOpen(pa) {
+function setState(pa, newState) {
   var ss = SpreadsheetApp.getActive().getSheetByName(PAS.sheet);
   var last = ss.getLastRow();
   for (var row = PA_FIRST_ROW; row <= last; row++) {
     if (readPA(row).id == pa.id) {
-      ss.getRange(row, 4).setValue(state.OPEN);
-      return;
-    }
-  }
-}
-
-function setClosed(pa) {
-  var ss = SpreadsheetApp.getActive().getSheetByName(PAS.sheet);
-  var last = ss.getLastRow();
-  for (var row = PA_FIRST_ROW; row <= last; row++) {
-    if (readPA(row).id == pa.id) {
-      ss.getRange(row, 4).setValue(state.CLOSED);
-      return;
-    }
-  }
-}
-
-function setState(pa, state) {
-  var ss = SpreadsheetApp.getActive().getSheetByName(PAS.sheet);
-  var last = ss.getLastRow();
-  for (var row = PA_FIRST_ROW; row <= last; row++) {
-    if (readPA(row).id == pa.id) {
-      ss.getRange(row, 4).setValue(state);
+      ss.getRange(row, 4).setValue(newState);
       return;
     }
   }

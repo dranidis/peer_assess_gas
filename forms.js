@@ -1,4 +1,4 @@
-function setUpPeerAssessmentForm_(pa, project) {
+function setUpPeerAssessmentForm_(pa, project, questions) {
     var ss = SpreadsheetApp.getActive();
 
     var form = FormApp.create('Peer Assessment Form: ' + pa.name + " for " + project.data.key);
@@ -19,30 +19,27 @@ function setUpPeerAssessmentForm_(pa, project) {
         var keyItem = form.addTextItem().setTitle('personal key').setRequired(true);
     }
 
-    sortStudents(); // to make sure students to be assessed appear in the same order
-
     var students = getStudents(project.data.key);
-    var stForm = []
+    var studentNames = []
     for (var s = 0; s < students.length; s++) {
-        stForm[s] = students[s].fname + " " + students[s].lname;
+        studentNames[s] = students[s].fname + " " + students[s].lname;
     }
-
-    var questions = getQuestions();
 
     for (var i = 0; i < questions.length; i++) {
         var item = form.addGridItem().setTitle(questions[i])
-            .setRows(stForm)
+            .setRows(studentNames)
             .setRequired(true)
             .setColumns([1, 2, 3, 4, 5])
-            .setHelpText("1 corresponds to Strongly Disagree - 5 to Strongly Agree");
+            .setHelpText("1: Strongly Disagree - 5: Strongly Agree");
     }
 
     for (var i = 0; i < students.length; i++) {
         var item = form.addParagraphTextItem();
-        item.setTitle("Comments for " + students[i].fname + " " + students[i].lname)
+        item.setTitle("Comments for " + studentNames[i])
         .setHelpText("Comments are welcome and required in cases of extreme assessment (i.e. 1 or 5)")
     }
     savePeerAssessmentLinks(pa.id, project.data.key, form);
+    form.setAcceptingResponses(true);
 }
 
 function renameSheetReg() {

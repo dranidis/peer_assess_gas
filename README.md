@@ -48,7 +48,9 @@ Refresh if necessary the script editor window.
 
 Refresh the google spreadsheet
 
-A new menu will appear "PA"
+A new menu will appear "PA".
+
+If the menu does not appear go to Tools->Script Editor and in the file test.gs comment out the first lines till: var test = new GasTap()
 
 The script is ready to be used.
 

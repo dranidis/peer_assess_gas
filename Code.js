@@ -20,7 +20,6 @@ function openPA(pa) {
   for (var i = 0; i < projects.length; i++) {
     setUpPeerAssessmentForm_(pa, projects[i], questions);
   }
-  ScriptApp.newTrigger('renameSheets').timeBased().after(2000).create(); // make less, check name?
 
   createPATriggers_(pa)
 
@@ -62,8 +61,11 @@ function setNewDeadline(pa, value) {
 function createPATriggers_(pa) {
   var deadline = pa.deadline;
 
+  var triggerClose = ScriptApp.newTrigger('closePATriggered').timeBased().at(deadline).create();
+  setupTriggerArguments(triggerClose, [pa.id], false);
+
   var triggerNow = ScriptApp.newTrigger('sendReminderToNonSubmissionsTriggered')
-    .timeBased().after(2000).create();
+    .timeBased().after(5000).create();
   setupTriggerArguments(triggerNow, [pa.id], false);
 
   var time1 = getReminderTime(deadline, 1);
@@ -77,8 +79,7 @@ function createPATriggers_(pa) {
     .timeBased().at(time2).create();
   setupTriggerArguments(trigger2, [pa.id], false);
 
-  var triggerClose = ScriptApp.newTrigger('closePATriggered').timeBased().at(deadline).create();
-  setupTriggerArguments(triggerClose, [pa.id], false);
+  ScriptApp.newTrigger('renameSheets').timeBased().after(10000).create(); // make less, check name?
 }
 
 function sendReminderToNonSubmissionsTriggered(event) {

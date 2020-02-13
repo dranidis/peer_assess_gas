@@ -43,6 +43,8 @@ Execute:
 clasp push
 ```
 
+Answer y to the question: *Manifest file has been updated. Do you want to push and overwrite? (y/N)* 
+
 Refresh the google spreadsheet
 
 A new menu "PA" will appear and a message for the start of the installation.

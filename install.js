@@ -68,7 +68,7 @@ function install() {
   }
 
   installSettings();
-
+  installQuestions();
   addFormulas_();
 
 

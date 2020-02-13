@@ -117,6 +117,28 @@ Questions
 
 */
 
+
+
+function installQuestions() {
+  var setSh = SpreadsheetApp.getActive().getSheetByName(QUESTIONS.sheet);
+  var values = [
+    ["Completed an equal (or even more) share of work."],
+    ["Produced high quality work."],
+    ["Work performed was very useful and contributed significantly to the final product."],
+    ["Was very positive and pleasant to work with (excellent partner)."],
+    ["Was extremely eager to plan and execute tasks and the project as a whole."],
+    ["Took a leadership role organizing others, encouraging group participation, supporting when necessary and solving problems."],
+    ["Routinely monitored the effectiveness of the group and made suggestions to make it more effective."],
+    ["Took active role on initiating ideas or actions."],
+    ["Respected differences of opinions and backgrounds. Was willing to negotiate and compromise when necessary."],
+    ["Was willing to work with others for the purpose of the group success."],
+    ["Routinely used time well throughout the project to ensure things get done on time and met deadlines and responsibilities."],
+    ["Always appeared for group-work. Was present at project meetings and teamwork."],
+  ];
+  setSh.getRange(2, 1, values.length, 1).setValues(values);
+  setSh.autoResizeColumns(1,1);
+}
+
 function getQuestions() {
   return getData_(QUESTIONS).map(function (q) {
     return q.question;

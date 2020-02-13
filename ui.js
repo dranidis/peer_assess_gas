@@ -18,11 +18,18 @@ function addMenu() {
       .addItem('Registration URL', 'showRegItem')
     )
     .addSubMenu(ui.createMenu('Install')
-      .addItem('Install all sheets', 'installSheetsItem')
+      // .addItem('Install all sheets', 'installSheetsItem')
       .addItem('Install Registration & Verification form', 'installFormsItem')
     )
     .addItem('Help', 'showSidebar')
     .addToUi();
+
+    if (!checkInstalled()) {
+      Browser.msgBox('PA will now install all necessary sheets. Click OK and wait until'
+      + ' you see the message "Installation is complete."\n'
+      + ' If the message does not appear (this could be due to time-out) reload the page.');
+      installSheetsItem();
+    }
 }
 
 function getPAselected(pas) {
@@ -45,10 +52,21 @@ function getPAselected(pas) {
   return pas[index];
 }
 
+function checkInstalled() {
+  var logSheet = SpreadsheetApp.getActive().getSheetByName(LOG.sheet);
+  if (logSheet) {
+    return logSheet.getRange(1, 1).getValue() === 'INSTALLED';
+  }
+  return false;
+}
+
 function installSheetsItem() {
   install();
-  Browser.msgBox('Check the Domain setting to true or false and then click on ' +
-    'Install Registration & Verification form')
+  SpreadsheetApp.getActive().getSheetByName(LOG.sheet).getRange(1, 1).setValue('INSTALLED');
+
+  Browser.msgBox('Installation is complete.\n Click PA -> Help to read the instructions how to setup the peer assessment.\n'
+    + ' One of the first steps is to set the Domain setting (in the Settings sheet) to true or false and then click on ' 
+    + 'PA -> Install -> Install Registration & Verification form')
 }
 
 function installFormsItem() {
@@ -176,7 +194,11 @@ function announceItem() {
 }
 
 function showRegItem() {
-  Browser.msgBox(FormApp.openById(getRegistrationFormId()).getPublishedUrl());
+  var registrationFormId = getRegistrationFormId();
+  if (registrationFormId != null)
+    Browser.msgBox(FormApp.openById(getRegistrationFormId()).getPublishedUrl());
+  else
+    Browser.msgBox('There is no registration URL. Click PA -> Install -> Install Registration & Verification form.');
 }
 
 function menuItem2() {

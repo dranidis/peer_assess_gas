@@ -4,16 +4,21 @@
  * and PA -> Install -> 
  */
 
-if ((typeof GasTap) === 'undefined') { // GasT Initialization. (only if not initialized yet.)
-  var cs = CacheService.getScriptCache().get('gast');
-  if (!cs) {
-    cs = UrlFetchApp.fetch('https://raw.githubusercontent.com/zixia/gast/master/src/gas-tap-lib.js').getContentText();
-    CacheService.getScriptCache().put('gast', cs, 21600);
-  }
-  eval(cs);
-} // Class GasTap is ready for use now!
+/**
+ * uncomment the following lines to enable testing for development.
+ * 
+ * The lines are commented to allow menu installation easily for users.
+ */
+// if ((typeof GasTap) === 'undefined') { // GasT Initialization. (only if not initialized yet.)
+//   var cs = CacheService.getScriptCache().get('gast');
+//   if (!cs) {
+//     cs = UrlFetchApp.fetch('https://raw.githubusercontent.com/zixia/gast/master/src/gas-tap-lib.js').getContentText();
+//     CacheService.getScriptCache().put('gast', cs, 21600);
+//   }
+//   eval(cs);
+// } // Class GasTap is ready for use now!
 
-var test = new GasTap()
+// var test = new GasTap()
 
 function gastTestRunner() {
   testgetProjects();

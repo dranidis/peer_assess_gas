@@ -43,29 +43,28 @@ Execute:
 clasp push
 ```
 
-Go to the Sheet script page.
-Refresh if necessary the script editor window.
-
 Refresh the google spreadsheet
 
-A new menu will appear "PA".
+A new menu "PA" will appear and a message for the start of the installation.
 
-If the menu does not appear go to Tools->Script Editor and in the file test.gs comment out the first lines till: var test = new GasTap()
-
-The script is ready to be used.
-
-## QUICKSTART FOR PEER ASSESSMENT
-
-Select PA -> Install -> Install all sheets
-
-A browser window will appear Authorization Required. Click Continue.
+At some point, a browser window will appear Authorization Required. Click Continue.
 Choose your account and click Allow.
 
 The script will execute and several spreadsheets will be created.
 
+Wait for the message "Installation is complete". 
+
+***IMPORTANT:***
+
+If the message does not appear reload the page. (Google scripts have a timeout of about 30 seconds. 
+Reloading the page will allow the installation to continue and complete)
+
+
+## QUICKSTART FOR PEER ASSESSMENT
+
 Go to Settings spreadsheet and set the Google Domain setting.
-If students are going to use domain emails leave it to TRUE.
-If students are going to use emails outside the domain set it to FALSE.
+If students are going to use google domain emails leave the value to TRUE.
+If students are going to use emails outside a google domain set the value to FALSE.
 
 Select PA -> Install -> Install Registration and Verification 
 

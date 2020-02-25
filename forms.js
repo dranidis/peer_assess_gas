@@ -66,6 +66,10 @@ function installRegistrationForm() {
         // not supported?
         // .setConfirmationMessage('Check your email in order to check if your registration is successful!');
     } else {
+        /*
+        allow users outside the domain to use the form
+        */
+        form.setRequireLogin(false);
         var item = form.addTextItem().setTitle('email').setRequired(true)
         var emailVal = FormApp.createTextValidation().requireTextIsEmail().build();
         item.setValidation(emailVal);
@@ -91,7 +95,11 @@ function installVerificationForm() {
         .setAllowResponseEdits(true)
         .setLimitOneResponsePerUser(false)
         .setConfirmationMessage('Check your email to see if the registration is completed!')
-
+        /*
+        allow users outside the domain to use the form
+        */
+        .setRequireLogin(false);
+        
     var emailVal = FormApp.createTextValidation().requireTextIsEmail().build();
     form.addTextItem().setTitle('email').setRequired(true).setValidation(emailVal);
     form.addTextItem().setTitle('personal key').setRequired(true);

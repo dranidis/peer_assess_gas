@@ -76,14 +76,29 @@ function install() {
 }
 
 function installForms() {
-  Logger.log(getRegistrationFormId());
+  Logger.log("Curent registration form Id: " + getRegistrationFormId());
+
   var regForm = getRegistrationFormId();
-  if (regForm == '' || regForm === "undefined" || regForm == null)
+  if (regForm == '' || regForm === "undefined" || regForm == null) {
+
+    var projects = getProjects();
+    if (projects.length == 0) {
+      Browser.msgBox('You have to enter the project first in the "PROJECTS" sheet!\n');
+      return;    
+    }
     installRegistrationForm();
+  } else {
+    Browser.msgBox('There is already a registration link in the Links sheet.\n');
+    return;
+  }
 
   var verForm = getVerificationFormId();
-  if (verForm == '' || verForm === "undefined" || verForm == null)
+  if (verForm == '' || verForm === "undefined" || verForm == null) {
     installVerificationForm();
+  } else {
+    Browser.msgBox('There is already a registration link in the Links sheet.\n');
+    return;
+  }
 
   installFormSubmitTrigger(); // not on addon
 }

@@ -340,6 +340,11 @@ function isProjectkey(projectkey) {
   return false;
 }
 
+function getProjectKeys() {
+  var projects = getData_(PROJECTS);
+  return projects.map(function(proj) { return proj.key; });
+}
+
 
 /*
 

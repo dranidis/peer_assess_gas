@@ -12,7 +12,7 @@ The script utilizes:
 
 **Prerequisite:** clasp https://developers.google.com/apps-script/guides/clasp
 
-Time to complete: 10-15 minutes.
+Time to complete: 5-15 minutes.
 
 1. Create a new Google spreadsheet and 
 
@@ -67,7 +67,7 @@ Click on Off and enable it to On. (This might already be enabled if you used scr
     * Wait for the message **"Installation is complete"**. 
 
 
-        * At some point, a browser window may appear Authorization Required. Click **Continue**. Choose your account and click **Allow**. 
+        * At some point, a browser window may appear **Authorization Required**. Click **Continue**. Choose your account and click **Allow**. 
 
     ***IMPORTANT:***
 
@@ -99,4 +99,6 @@ and send email to those who did not fill it (see help).
 
 The peer asssessment will close automatically. At any time you can click PA -> Calculate to see the peer assessment results.
 
-More info can be found in the help file: PA -> Help.
+More info can be found in the help file: **PA -> Help**.      
+
+* At some point, a browser window may appear **Authorization Required**. Click **Continue**. Choose your account and click **Allow**. 

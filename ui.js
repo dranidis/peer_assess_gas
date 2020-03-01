@@ -64,9 +64,7 @@ function installSheetsItem() {
   install();
   SpreadsheetApp.getActive().getSheetByName(LOG.sheet).getRange(1, 1).setValue('INSTALLED');
 
-  Browser.msgBox('Installation is complete.\n Click PA -> Help to read the instructions how to setup the peer assessment.\n'
-    + ' One of the first steps is to set the Domain setting (in the Settings sheet) to true or false and then click on ' 
-    + 'PA -> Install -> Install Registration & Verification form')
+  Browser.msgBox('Installation is complete.\n Click PA -> Help to read the instructions how to setup the peer assessment.\n');
 }
 
 function installFormsItem() {

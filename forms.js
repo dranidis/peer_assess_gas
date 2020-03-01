@@ -75,7 +75,12 @@ function installRegistrationForm() {
         item.setValidation(emailVal);
     }
 
-    form.addTextItem().setTitle('project key').setRequired(true);
+    // form.addTextItem().setTitle('project key').setRequired(true);
+    var item = form.addMultipleChoiceItem();
+    item.setTitle('Select your project').setRequired(true);
+
+    item.setChoiceValues(getProjectKeys())
+    .showOtherOption(false);
 
     ScriptApp.newTrigger('renameSheetReg').timeBased().after(2000).create(); // make less, check name?
 

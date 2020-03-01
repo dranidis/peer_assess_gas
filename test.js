@@ -24,6 +24,7 @@ function gastTestRunner() {
   testgetProjects();
   testGetGroup();
   testIsProjectkey();
+  testGetProjectKeys();
   testGetStudents();
   testGetStudent();
   testCalculateGrade();
@@ -113,6 +114,19 @@ function testgetProjects() {
     for (i = 0; i < act.length; i++) {
       t.equal(act[i].data.name, testProjects[i].name, 'getProjects name' + i);
       t.equal(act[i].data.key, testProjects[i].key, 'getProjects key' + i);
+    }
+  });
+}
+
+function testGetProjectKeys() {
+  preSetupProjects_();
+
+  test('testGetProjectKeys', function (t) {
+    var act = getProjectKeys();
+    t.equal(act.length, testProjects.length, 'length');
+
+    for (i = 0; i < act.length; i++) {
+      t.equal(act[i], testProjects[i].key, 'key' + i);
     }
   });
 }

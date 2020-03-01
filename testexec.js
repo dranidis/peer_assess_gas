@@ -25,6 +25,12 @@ function testAllFunctionDiff() {
 }
 
 
+function testCreateSheet() {
+  createSheet_(PROJECTS);
+  createSheet_(STUDENTS);
+  createSheet_(PA_PROJECTS);
+  createSheet_(PAS);
+}
 
 
 function testGetQuestions() {

@@ -1,6 +1,10 @@
 PROJECTS = {
   sheet: 'Projects',
-  columns: ["NAME",	"KEY",	"No of Students",	"No of Verified Students"],
+  columns: [
+    fillWithUnderScore("NAME", 15),	
+    fillWithUnderScore("KEY",	15),
+    "No of Students",	
+    "No of Verified Students"],
   fields: ["name", "key", "noStudents", "noVerifiedStudents"],
   hidden: false,
   protected: true,
@@ -9,7 +13,13 @@ PROJECTS = {
 
 STUDENTS = {
   sheet: 'Students',
-  columns: ["FIRST NAME",	"LAST NAME",	"EMAIL",	"PROJECT KEY",	"PERSONAL KEY",	"VERIFIED"],
+  columns: [
+    fillWithUnderScore("FIRST NAME",	15),
+    fillWithUnderScore("LAST NAME",	15),
+    fillWithUnderScore("EMAIL",	35),
+    fillWithUnderScore("PROJECT KEY",	15),
+    "PERSONAL KEY",	
+    "VERIFIED"],
   fields: ["fname", "lname", "email", "projectkey", "personalkey", "verified"],
   hidden: false,
   protected: true,
@@ -18,7 +28,11 @@ STUDENTS = {
 
 PAS = {
   sheet: 'Peer Assessments',
-  columns: ["NAME",	"KEY",	"DEADLINE",	"STATE"],
+  columns: [
+    fillWithUnderScore("NAME", 20),	
+    fillWithUnderScore("KEY",	15),
+    "DEADLINE (YYYY-MM-DD HH:MM)",	
+    "STATE"],
   fields: ["name", "id", "deadline", "state"],
   hidden: false,
   protected: true,
@@ -27,7 +41,7 @@ PAS = {
 
 PA_PROJECTS = {
   sheet: 'PAs Projects',
-  columns: ["PEER ASSESSMENT KEY",	"KEY	PROJECT KEY",	"GROUP GRADE",	"", "FORM ID", "FORM URL"],
+  columns: ["PEER ASSESSMENT KEY",	"PROJECT KEY",	"GROUP GRADE",	"", "FORM ID", "FORM URL"],
   fields: ["pakey", "projectkey", "grade", "", "formId", "formURL"],
   hidden: false,
   protected: true,

@@ -188,3 +188,18 @@ function testOpenPA() {
   var pas = getPAs();
   openPA(pas[0]);
 }
+
+function testFillWithUnderScore() {
+  
+  test('fillWithUnderScore', function (t) {
+    var filled = fillWithUnderScore('name', 10);
+    t.equal(filled, 'name______', 'filled with 6 _');
+    
+    var filled = fillWithUnderScore('name', 4);
+    t.equal(filled, 'name', 'filled with 0 _');
+  
+    var filled = fillWithUnderScore('name', 3);
+    t.equal(filled, 'name', 'filled with 0 _');
+  
+  });  
+}

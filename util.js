@@ -86,3 +86,11 @@ function deleteAllSheetsWithForms() {
     }    
   }
 }
+
+function fillWithUnderScore(str, len) {
+  var strLen = str.length;
+  for(var i = 0; i < len - strLen; i++) {
+    str += "_";
+  }
+  return str;
+}

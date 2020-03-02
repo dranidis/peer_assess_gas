@@ -40,7 +40,7 @@ function testGetQuestions() {
 }
 
 function testGetProjectkeyFromFormId() {
-  Logger.log(getProjectkeyFromFormId("1z4zsCIVv7QC_3wg3TE97WQsOYwg_BHVse3Fo3SuIbFk")); 
+  Logger.log(getProjectkeyFromFormId("1z4zsCIVv7QC_3wg3TE97WQsOYwg_BHVse3Fo3SuIbFk"));
 }
 
 
@@ -59,11 +59,11 @@ function testGetPAresults() {
 }
 
 function testSort() {
-  var sheet = SpreadsheetApp.getActive().getSheetByName("Students") 
+  var sheet = SpreadsheetApp.getActive().getSheetByName("Students")
   sheet.getDataRange().sort([{column: 4, ascending: true}, {column: 2, ascending: true}])
 }
 
-function testSetAcceptingResponses() { 
+function testSetAcceptingResponses() {
   var projects = getProjects();
   for(var p=0; p < projects.length; p++) {
     var form = FormApp.openById(projects[p].data.paFormId);
@@ -111,7 +111,7 @@ function processTest() {
   var projectkey = "PROJ123"
   var questions = getQuestions();
   var students = getStudents(projectkey);
-  
+
   for(var q=0; q < questions.length; q++) {
     for (var s=0; s < students.length; s++) {
       var string = questions[q] + " [" + students[s].fname + " " + students[s].lname + "]"
@@ -153,7 +153,7 @@ function execgetSettings() {
 }
 
 function testgetPaProject() {
-  var pp = getPaProject("pa1", "PROJ123") 
+  var pp = getPaProject("pa1", "PROJ123")
   Logger.log(pp.row)
   Logger.log(pp.data)
 }
@@ -163,7 +163,7 @@ function testfunctionsavePeerAssessmentLinks() {
 }
 function testGetVerURL() {
   Logger.log( link = FormApp.openById(getVerificationFormId()).getPublishedUrl());
-}  
+}
 
 function testgetPA() {
   Logger.log(getPA("pa1"))
@@ -188,7 +188,7 @@ function testaddPaProject() {
   Logger.log(addPaProject("pa2", "PROJ123"))
 }
 
-  
+
 function testgetPaProjects() {
   var pp = getPaProjects()
   for(var i=0; i < pp.length; i++)
@@ -218,7 +218,10 @@ function testgetReminderTime() {
 }
 
 function testnumStudentsSubmitted() {
-  var n = numStudentsSubmitted("PROJ123", "pa1") 
+  var n = numStudentsSubmitted("PROJ123", "pa1")
   Logger.log(n)
 }
 
+function testSetState() {
+  setState(getPA('PA1'), PaState.OPEN);
+}

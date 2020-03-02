@@ -23,7 +23,7 @@ function openPA(pa) {
 
   createPATriggers_(pa)
 
-  setState(pa, state.OPEN);
+  setState(pa, PaState.OPEN);
 }
 
 function renameSheets() {
@@ -52,7 +52,7 @@ function setNewDeadline(pa, value) {
   deletePATriggers();
   createPATriggers_(pa);
 
-  setState(pa, state.OPEN);
+  setState(pa, PaState.OPEN);
 
   sendReminderToNonSubmissions(pa);
 }
@@ -104,7 +104,7 @@ function closePA(pa) {
   }
   sendEmailClosedToInstructor_(pa);
 
-  setState(pa, state.CLOSED);
+  setState(pa, PaState.CLOSED);
 }
 
 function deletePATriggers() {
@@ -269,7 +269,7 @@ Calculates the pa results for the given assessment.
 A sheet is created with the assessment's name for viewing the results.
 
 If final is true the results are considered final and ready to be announced
-to students. An extra sheet is created with students emails and the 
+to students. An extra sheet is created with students emails and the
 total grade and total PA score for the assessment.
 
 */
@@ -306,7 +306,7 @@ function processPA(pa, final) {
     processPAForProject_(pa, projects[p], newSheetName, settings, questions, final)
   }
   if (final) {
-    setState(pa, state.FINALIZED);
+    setState(pa, PaState.FINALIZED);
     protectFinal_(pa)
   }
 }
@@ -573,7 +573,7 @@ function onFormSubmit(e) {
 
   logAllResponses_(e);
 
-  // There are multiple onFormSubmit triggered calls on one form submit. 
+  // There are multiple onFormSubmit triggered calls on one form submit.
   // They have empty fields. They will not be handled
   if (isEmptyResponses_(e)) {
     sheetLog("REJECTED: " + e.namedValues)

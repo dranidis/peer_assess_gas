@@ -1,24 +1,24 @@
 /**
  * to run the tests first
  * execute PA -> Install -> Install sheets
- * and PA -> Install -> 
+ * and PA -> Install ->
  */
 
 /**
  * uncomment the following lines to enable testing for development.
- * 
+ *
  * The lines are commented to allow menu installation easily for users.
  */
-// if ((typeof GasTap) === 'undefined') { // GasT Initialization. (only if not initialized yet.)
-//   var cs = CacheService.getScriptCache().get('gast');
-//   if (!cs) {
-//     cs = UrlFetchApp.fetch('https://raw.githubusercontent.com/zixia/gast/master/src/gas-tap-lib.js').getContentText();
-//     CacheService.getScriptCache().put('gast', cs, 21600);
-//   }
-//   eval(cs);
-// } // Class GasTap is ready for use now!
+if ((typeof GasTap) === 'undefined') { // GasT Initialization. (only if not initialized yet.)
+  var cs = CacheService.getScriptCache().get('gast');
+  if (!cs) {
+    cs = UrlFetchApp.fetch('https://raw.githubusercontent.com/zixia/gast/master/src/gas-tap-lib.js').getContentText();
+    CacheService.getScriptCache().put('gast', cs, 21600);
+  }
+  eval(cs);
+} // Class GasTap is ready for use now!
 
-// var test = new GasTap()
+var test = new GasTap()
 
 function gastTestRunner() {
   testgetProjects();
@@ -204,16 +204,16 @@ function testOpenPA() {
 }
 
 function testFillWithUnderScore() {
-  
+
   test('fillWithUnderScore', function (t) {
     var filled = fillWithUnderScore('name', 10);
     t.equal(filled, 'name______', 'filled with 6 _');
-    
+
     var filled = fillWithUnderScore('name', 4);
     t.equal(filled, 'name', 'filled with 0 _');
-  
+
     var filled = fillWithUnderScore('name', 3);
     t.equal(filled, 'name', 'filled with 0 _');
-  
-  });  
+
+  });
 }

@@ -80,7 +80,7 @@ function openPAitem() {
     pa = getPAselected(pas);
 
   //  if (pa.open) {
-  if (pa.state != state.INACTIVE && pa.state != "") {
+  if (pa.state != PaState.INACTIVE && pa.state != "") {
     Browser.msgBox('The peer assessment ' + pa.name + " has already been opened.");
     return;
   }
@@ -118,7 +118,7 @@ function updateDeadlineMenuItem() {
   if (pa == null)
     return;
 
-  if (pa.state != state.OPEN && pa.state != state.CLOSED) {
+  if (pa.state != PaState.OPEN && pa.state != PaState.CLOSED) {
     SpreadsheetApp.getActiveSpreadsheet().toast('The peer assessment ' + pa.name + "'s deadline cannot get updated." +
       "\nFinished or inactive projects cannot change.");
     return;
@@ -145,11 +145,11 @@ function calculateItem() {
   if (pa == null)
     return;
 
-  if (pa.state == state.FINALIZED) {
+  if (pa.state == PaState.FINALIZED) {
     Browser.msgBox('The results for ' + pa.name + " are already announced.");
     return;
   }
-  if (pa.state != state.OPEN && pa.state != state.CLOSED && pa.state != state.FINALIZED) {
+  if (pa.state != PaState.OPEN && pa.state != PaState.CLOSED && pa.state != PaState.FINALIZED) {
     Browser.msgBox('There are no results for ' + pa.name + ".");
     return;
   }
@@ -166,7 +166,7 @@ function finalizeItem() {
   if (pa == null)
     return;
 
-  if (pa.state != state.CLOSED) {
+  if (pa.state != PaState.CLOSED) {
     Browser.msgBox('Only CLOSED assessments can be finalized. ');
     return;
   }
@@ -184,7 +184,7 @@ function announceItem() {
   if (pa == null)
     return;
 
-  if (pa.state != state.FINALIZED) {
+  if (pa.state != PaState.FINALIZED) {
     Browser.msgBox('Only FINALIZED results can be sent to students. ');
     return;
   }
@@ -209,7 +209,7 @@ function menuItem2() {
   if (pa == null)
     return;
 
-  if (pa.state != state.OPEN) {
+  if (pa.state != PaState.OPEN) {
     Browser.msgBox('The assessment ' + pa.name + " is not OPEN. ");
     return;
   }
@@ -263,7 +263,7 @@ function onEdit(e) {
         Browser.msgBox("Deadline of " + pa.name + " is in the past! ");
         return;
       }
-      if (pa.state != state.OPEN && pa.state != state.CLOSED) {
+      if (pa.state != PaState.OPEN && pa.state != PaState.CLOSED) {
         return;
       }
       Browser.msgBox("Run 'PA -> Peer Assessments -> Updates Deadlines' from the menu to update " + pa.name + "'s deadline to " + value);
@@ -309,7 +309,7 @@ function showAlertBeforeOpen_(pa) {
   var result = ui.alert(
     'Opening the peer assessment ' + pa.name,
     'The peer assessment contains ' +
-    getQuestions().length + 
+    getQuestions().length +
     ' questions. Are you sure you want to continue?',
     ui.ButtonSet.YES_NO);
 

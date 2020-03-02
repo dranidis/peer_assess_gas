@@ -129,7 +129,7 @@ function updateDeadlineMenuItem() {
     return;
   }
 
-  setNewDeadline(pa, pa.deadline);
+  setNewDeadline(pa);
 
   SpreadsheetApp.getActiveSpreadsheet().toast("Deadline of " + pa.name + " changed to " + pa.deadline);
 }

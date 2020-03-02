@@ -5,5 +5,5 @@ interface Student {
   projectkey: string,
   personalkey: string,
   verified: boolean,
-  submittedpa: any
+  submittedpa: {[key:string]: boolean}
 }

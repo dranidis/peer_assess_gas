@@ -1,15 +1,13 @@
 /**
-
-Creates one form for each project and renames the gathering responses sheet including the project name.
-Enables filling the peer assessment till the deadline.
-Sends an email to students.
-Sends 2 reminder emails before the deadline to those not submitted yet.
-Reminder times/dates are defined at settings
-Closes the assessment form at the deadline.
-
-*/
-
-function openPA(pa) {
+ * Creates one form for each project and renames the gathering responses sheet
+ * including the project name.
+ * Enables filling the peer assessment till the deadline. Sends an email to students.
+ * Sends 2 reminder emails before the deadline to those not submitted yet.
+ * Reminder times/dates are defined at settings Closes the assessment form at the deadline.
+ *
+ * @param pa
+ */
+ function openPA(pa: PeerAssessment) {
   var sp = SpreadsheetApp.getActive()
   var projects = getProjects();
   var questions = getQuestions();
@@ -17,11 +15,11 @@ function openPA(pa) {
 
   PropertiesService.getScriptProperties().setProperty("PA", pa.id)
 
-  for (var i = 0; i < projects.length; i++) {
-    setUpPeerAssessmentForm_(pa, projects[i], questions);
+  for (let project of projects) {
+    setUpPeerAssessmentForm_(pa, project, questions);
   }
 
-  createPATriggers_(pa)
+  createPATriggers_(pa);
 
   setState(pa, PaState.OPEN);
 }
@@ -38,16 +36,16 @@ function renameSheets() {
   }
 }
 
-function setAcceptingResponsesForProjects(paid, enabled) {
+function setAcceptingResponsesForProjects(paid: string, enabled: boolean) {
   var projects = getProjects();
-  for (var p = 0; p < projects.length; p++) {
-    var pp = getPaProject(paid, projects[p].data.key);
+  for (let project of projects) {
+    var pp = getPaProject(paid, project.data.key);
     var form = FormApp.openById(pp.data.formId);
     form.setAcceptingResponses(enabled);
   }
 }
 
-function setNewDeadline(pa, value) {
+function setNewDeadline(pa: PeerAssessment) {
   setAcceptingResponsesForProjects(pa.id, true);
   deletePATriggers();
   createPATriggers_(pa);
@@ -58,7 +56,7 @@ function setNewDeadline(pa, value) {
 }
 
 
-function createPATriggers_(pa) {
+function createPATriggers_(pa: PeerAssessment) {
   var deadline = pa.deadline;
 
   var triggerClose = ScriptApp.newTrigger('closePATriggered').timeBased().at(deadline).create();
@@ -94,13 +92,13 @@ function closePATriggered(event) {
   closePA(pa);
 }
 
-function closePA(pa) {
+function closePA(pa: PeerAssessment) {
   var projects = getProjects();
-  for (var p = 0; p < projects.length; p++) {
-    var pp = getPaProject(pa.id, projects[p].data.key);
+  for (let project of projects) {
+    var pp = getPaProject(pa.id, project.data.key);
     var form = FormApp.openById(pp.data.formId);
     form.setAcceptingResponses(false);
-    form.setCustomClosedFormMessage("The peer assessment " + pa.name + " has closed due to past deadline.")
+    form.setCustomClosedFormMessage(`The peer assessment ${pa.name} has closed due to past deadline.`);
   }
   sendEmailClosedToInstructor_(pa);
 
@@ -119,7 +117,7 @@ function deletePATriggers() {
   }
 }
 
-function sendEmailClosedToInstructor_(pa) {
+function sendEmailClosedToInstructor_(pa: PeerAssessment) {
   var email = Session.getActiveUser().getEmail();
   var url = SpreadsheetApp.getActive().getUrl();
   if (email == "") {
@@ -128,25 +126,13 @@ function sendEmailClosedToInstructor_(pa) {
   }
   GmailApp.sendEmail(
     email,
-    "PA: Assessment " + pa.name + " has closed.",
+    `PA: Assessment  ${pa.name}  has closed.`,
     url)
 }
 
 
-function sendReminderToNonSubmissions(pa) {
-  var st = []
-  var projects = getProjects();
-  for (var p = 0; p < projects.length; p++) {
-    var students = getStudents(projects[p].data.key).filter(function (s) {
-      if (getSettings().domain) {
-        return !s.submittedpa[pa.id];
-      }
-      return s.verified && !s.submittedpa[pa.id]
-    })
-    for (var s = 0; s < students.length; s++) {
-      st.push(students[s])
-    }
-  }
+function sendReminderToNonSubmissions(pa: PeerAssessment) {
+  let st = getStudentsWhoDidNotSubmit(pa);
 
   if (st.length == 0) {
     return;
@@ -160,42 +146,63 @@ function sendReminderToNonSubmissions(pa) {
   }
 
   if (confirm) {
-    for (var s = 0; s < st.length; s++) {
+    for (let s = 0; s < st.length; s++) {
       sendReminderPA_(pa, st[s])
     }
   }
 }
 
-function sendReminderForConfirmation() {
-  var st = []
+function getStudentsWhoDidNotSubmit(pa: PeerAssessment) {
+  let isDomain = getSettings().domain;
+  var studentsWhoDidNotSubmit: Student[] = [];
   var projects = getProjects();
-  for (var p = 0; p < projects.length; p++) {
-    var students = getStudents(projects[p].data.key).filter(function (s) {
-      return !s.verified
-    })
-    for (var s = 0; s < students.length; s++) {
-      st.push(students[s])
+  for (let project of projects) {
+    var students = getStudents(project.data.key).filter(s => {
+      if (isDomain) {
+        return !s.submittedpa[pa.id];
+      }
+      return s.verified && !s.submittedpa[pa.id];
+    });
+    for (let student of students) {
+      studentsWhoDidNotSubmit.push(student);
     }
   }
+  return studentsWhoDidNotSubmit;
+}
 
-  var confirm = showAlertBeforeMail_(st);
+function sendReminderForConfirmation() {
+  var notVerified: Student[] = notVerifiedStudents();
+
+  var confirm = showAlertBeforeMail_(notVerified);
 
   if (confirm) {
-    for (var s = 0; s < st.length; s++) {
-      if (st[s].personalkey == "") {
-        var student = getStudent(st[s].email);
+    for (let s of notVerified) {
+      if (s.personalkey == "") {
+        var student = getStudent(s.email);
         student.data.personalkey = generateUniqueKey();
-        st[s].personalkey = student.data.personalkey;
+        s.personalkey = student.data.personalkey;
         saveStudent(student);
       }
-      sendEmailForConfirmation_(st[s].fname, st[s].email, st[s].personalkey)
+      sendEmailForConfirmation_(s);
     }
   }
 }
 
 
-function processPAForProject_(peerass, project, newSheetName, settings, questions, final) {
-  var paProject = getPaProject(peerass.id, project.data.key);
+function notVerifiedStudents(): Student[] {
+  let notVerified: Student[] = [];
+  let projects = getProjects();
+  for (let project of projects) {
+    let students = getStudents(project.data.key).filter(s => !s.verified);
+    for (let student of students) {
+      notVerified.push(student);
+    }
+  }
+  return notVerified;
+}
+
+function processPAForProject_(peerass: PeerAssessment, project: Row<Project>, newSheetName: string, settings: Settings, questions: string[], isFinal: boolean) {
+  let paProject:Row<PaProject> = getPaProject(peerass.id, project.data.key);
   if (paProject == null) {
     Browser.msgBox("Peer assessment has not been opened for project " + project.data.name)
     return;
@@ -209,11 +216,11 @@ function processPAForProject_(peerass, project, newSheetName, settings, question
   var penalty = settings.penalty;
 
   if (isNaN(weight)) {
-    throw new Error("weight NaN")
+    throw new Error("weight NaN");
   }
 
   var debug = false;
-  var pa = getPAresults(formId, projectkey, self, debug)
+  var paResults = getPAresults(formId, projectkey, self, debug)
 
   var students = getStudents(projectkey);
   var queLen = questions.length;
@@ -221,7 +228,7 @@ function processPAForProject_(peerass, project, newSheetName, settings, question
   var sh = SpreadsheetApp.getActive().getSheetByName(newSheetName);
 
   var finalSh = null;
-  if (final)
+  if (isFinal)
     finalSh = SpreadsheetApp.getActive().getSheetByName(getFinalSheetName(peerass));
 
   var groupGrade = getGroupGrade(peerass.id, project.data.key);
@@ -237,46 +244,46 @@ function processPAForProject_(peerass, project, newSheetName, settings, question
 
   for (var i = 0; i < students.length; i++) {
     var e = students[i].email;
-    var pen = pa.penalty[e] ? 1 * penalty : 0
+    var pen = paResults.penalty[e] ? 1 * penalty : 0
 
-    var gradeBefore = calculateGrade(groupGrade, Number(pa.scores[e][0]), weight, 0);
+    var gradeBefore = calculateGrade(groupGrade, Number(paResults.scores[e][0]), weight, 0);
     gradeBefore = gradeBefore > 100 ? 100 : gradeBefore;
 
-    var grade = calculateGrade(groupGrade, Number(pa.scores[e][0]), weight, pen);
+    var grade = calculateGrade(groupGrade, Number(paResults.scores[e][0]), weight, pen);
     grade = grade > 100 ? 100 : grade;
 
     // ROUNDING UP
     gradeBefore = Math.round(gradeBefore)
     grade = Math.round(grade)
-    for (var k = 0; k < pa.scores[e].length; k++) {
-      pa.scores[e][k] = Math.round(100 * pa.scores[e][k]) / 100;
+    for (var k = 0; k < paResults.scores[e].length; k++) {
+      paResults.scores[e][k] = Math.round(100 * paResults.scores[e][k]) / 100;
     }
 
-    values = [e, project.data.key, grade, pen, gradeBefore];
-    values = values.concat(pa.scores[e]);
+    let values = [e, project.data.key, grade, pen, gradeBefore];
+    values = values.concat(paResults.scores[e]);
     sh.appendRow(values);
 
-    if (final) {
-      Logger.log([e, grade, pa.scores[e][0]])
-      finalSh.appendRow([e, grade, pa.scores[e][0]])
+    if (isFinal) {
+      Logger.log([e, grade, paResults.scores[e][0]])
+      finalSh.appendRow([e, grade, paResults.scores[e][0]])
     }
   }
 }
 
-/*
-
-Calculates the pa results for the given assessment.
-A sheet is created with the assessment's name for viewing the results.
-
-If final is true the results are considered final and ready to be announced
-to students. An extra sheet is created with students emails and the
-total grade and total PA score for the assessment.
-
-*/
-function processPA(pa, final) {
+/**
+ * Calculates the pa results for the given assessment.
+ * A sheet is created with the assessment's name for viewing the results.
+ * If final is true the results are considered final and ready to be announced
+ * to students. An extra sheet is created with students emails and the
+ * total grade and total PA score for the assessment.
+ *
+ * @param pa
+ * @param isFinal
+ */
+function processPA(pa: PeerAssessment, isFinal: boolean) {
   var sp = SpreadsheetApp.getActive();
 
-  var newSheetName = "PA: " + pa.id;
+  var newSheetName: string = "PA: " + pa.id;
   try {
     sp.insertSheet(newSheetName, sp.getNumSheets() + 1);
   } catch (e) {
@@ -284,11 +291,11 @@ function processPA(pa, final) {
     sp.getSheetByName(newSheetName).clearContents();
   }
 
-  if (final) {
+  if (isFinal) {
     prepareFinalSheet(pa)
   }
 
-  var projects = getProjects();
+  var projectRows = getProjects();
   var questions = getQuestions();
 
   var sh = SpreadsheetApp.getActive().getSheetByName(newSheetName);
@@ -302,16 +309,16 @@ function processPA(pa, final) {
     "self-assessment", settings.self,
   ])
 
-  for (p = 0; p < projects.length; p++) {
-    processPAForProject_(pa, projects[p], newSheetName, settings, questions, final)
+  for (let projectRow of projectRows) {
+    processPAForProject_(pa, projectRow, newSheetName, settings, questions, isFinal)
   }
-  if (final) {
+  if (isFinal) {
     setState(pa, PaState.FINALIZED);
     protectFinal_(pa)
   }
 }
 
-function protectFinal_(pa) {
+function protectFinal_(pa: PeerAssessment) {
   var sheet = SpreadsheetApp.getActive().getSheetByName(getFinalSheetName(pa));
   sheet.getRange(1, 1, 1, sheet.getLastColumn())
     .setBackground("black")
@@ -325,7 +332,7 @@ function protectFinal_(pa) {
 
 }
 
-function announcePA(pa) {
+function announcePA(pa: PeerAssessment) {
   var sh = SpreadsheetApp.getActive().getSheetByName(getFinalSheetName(pa));
   var values = sh.getDataRange().offset(1, 0).getValues();
   var students = getAllStudents();
@@ -356,15 +363,15 @@ function handlePeerAss_(e, projectkey, pakey) {
 
   // TODO: needs refactoring
   if (getSettings().domain) {
-    var verification = {
+    let verification = {
       email: emailData,
       // personalkey: ss.getRange(e.range.getRow(), 3).getValue()
     }
     sheetLog("email: " + verification.email)
     // sheetLog("personalkey: " + verification.personalkey)
 
-    var student = getStudent(verification.email)
-    if (student == null) {
+    var studentRow = getStudent(verification.email)
+    if (studentRow == null) {
       // TODO
       // check case personal key exists!!!
 
@@ -374,7 +381,7 @@ function handlePeerAss_(e, projectkey, pakey) {
       return;
     }
 
-    sheetLog(student)
+    sheetLog(studentRow)
 
     //  var editURL = getEditResponseUrl_(e)
     var formResponse = getFormResponse_(e)
@@ -390,33 +397,33 @@ function handlePeerAss_(e, projectkey, pakey) {
 
     var responsesName = e.range.getSheet().getName();
 
-    if (student.data.projectkey != projectkey) {
-      sheetLog("Student not in project: '" + student.data.projectkey + "' '" + projectkey + "'")
+    if (studentRow.data.projectkey != projectkey) {
+      sheetLog("Student not in project: '" + studentRow.data.projectkey + "' '" + projectkey + "'")
       return;
     }
 
     var pa = getPA(pakey);
 
     if (editURL != null) {
-      sendSubmissionMail(student.data.email, student.data.fname, pa.name, projectkey, editURL)
+      sendSubmissionMail(studentRow.data, pa.name, editURL)
     }
 
     // pa passed as an argument
-    setStudentSubmittedPA(student, pakey, true)
+    setStudentSubmittedPA(studentRow, pakey, true)
 
     sheetLog("PA Submitted");
     return;
   }
 
-  var verification = {
+  let verification = {
     email: emailData,
     personalkey: ss.getRange(e.range.getRow(), 3).getValue()
   }
   sheetLog("email: " + verification.email)
   sheetLog("personalkey: " + verification.personalkey)
 
-  var student = getStudent(verification.email)
-  if (student == null) {
+  var studentRow = getStudent(verification.email)
+  if (studentRow == null) {
     // TODO
     // check case personal key exists!!!
 
@@ -426,35 +433,35 @@ function handlePeerAss_(e, projectkey, pakey) {
     return;
   }
 
-  sheetLog(student)
+  sheetLog(studentRow);
 
   //  var editURL = getEditResponseUrl_(e)
   var formResponse = getFormResponse_(e)
   var editURL = formResponse.getEditResponseUrl();
   sheetLog("EDITURL: " + editURL);
 
-  if (student.data.personalkey != verification.personalkey) {
-    sheetLog("Wrong key for student " + student);
-    GmailApp.sendEmail(verification.email, 'PA: Wrong personal key', 'Your personal key is: ' + student.data.personalkey +
+  if (studentRow.data.personalkey != verification.personalkey) {
+    sheetLog("Wrong key for student " + studentRow);
+    GmailApp.sendEmail(verification.email, 'PA: Wrong personal key', 'Your personal key is: ' + studentRow.data.personalkey +
       '. Edit your response in ' + editURL);
     return;
   }
 
   var responsesName = e.range.getSheet().getName();
 
-  if (student.data.projectkey != projectkey) {
-    sheetLog("Student not in project: '" + student.data.projectkey + "' '" + projectkey + "'")
+  if (studentRow.data.projectkey != projectkey) {
+    sheetLog("Student not in project: '" + studentRow.data.projectkey + "' '" + projectkey + "'");
     return;
   }
 
   var pa = getPA(pakey);
 
   if (editURL != null) {
-    sendSubmissionMail(student.data.email, student.data.fname, pa.name, projectkey, editURL)
+    sendSubmissionMail(studentRow.data, pa.name, editURL);
   }
 
   // pa passed as an argument
-  setStudentSubmittedPA(student, pakey, true)
+  setStudentSubmittedPA(studentRow, pakey, true);
 
   sheetLog("PA Submitted");
 }
@@ -463,14 +470,16 @@ function handleRegistration(e) {
   sheetLog("Starting Registration")
   var ss = SpreadsheetApp.getActive().getSheetByName(e.range.getSheet().getName());
 
-  var reg = {}
+  let reg: Student;
   if (getSettings().domain) {
     reg = {
       email: ss.getRange(e.range.getRow(), 2).getValue(),
       fname: ss.getRange(e.range.getRow(), 3).getValue(),
       lname: ss.getRange(e.range.getRow(), 4).getValue(),
       projectkey: ss.getRange(e.range.getRow(), 5).getValue(),
-      personalkey: generateUniqueKey()
+      personalkey: generateUniqueKey(),
+      verified: false,
+      submittedpa: {}
     }
   } else {
     reg = {
@@ -478,9 +487,10 @@ function handleRegistration(e) {
       lname: ss.getRange(e.range.getRow(), 3).getValue(),
       email: ss.getRange(e.range.getRow(), 4).getValue(),
       projectkey: ss.getRange(e.range.getRow(), 5).getValue(),
-      personalkey: generateUniqueKey()
+      personalkey: generateUniqueKey(),
+      verified: false,
+      submittedpa: {}
     }
-
   }
 
   if (getStudent(reg.email) != null) {
@@ -498,14 +508,14 @@ function handleRegistration(e) {
   // not having the key.
   if (getSettings().domain) {
     // no verification needed
-    addStudent(reg)
-    var student = getStudent(reg.email)
+    addStudent(reg);
+    var student = getStudent(reg.email);
     setStudentVerified(student, true);
     sendEmailForSuccess(student.data);
     Logger.log("VER: " + reg.email + " Verified");
   } else {
-    var email = "" + reg.email
-    sendEmailForConfirmation_(reg.fname, email, reg.personalkey)
+    reg.email = "" + reg.email
+    sendEmailForConfirmation_(reg);
 
     addStudent(reg)
     sheetLog("REG: Student " + reg.lname + " added");

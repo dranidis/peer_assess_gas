@@ -28,6 +28,7 @@ function gastTestRunner() {
   testGetStudents();
   testGetStudent();
   testCalculateGrade();
+  testNotVerifiedStudents();
   test.finish();
 }
 
@@ -38,7 +39,7 @@ var testStudents = [
     email: 'dranidis@gmail.com',
     projectkey: 'PROJ123',
     personalkey: '',
-    verified: '',
+    verified: true,
   },
   {
     fname: 'DD',
@@ -46,7 +47,7 @@ var testStudents = [
     email: 'ddtomail@gmail.com',
     projectkey: 'PROJ456',
     personalkey: '',
-    verified: '',
+    verified: false,
   },
   {
     fname: 'Dimi',
@@ -54,7 +55,7 @@ var testStudents = [
     email: 'dranidis@citycollege.sheffield.eu',
     projectkey: 'PROJ123',
     personalkey: '',
-    verified: '',
+    verified: false,
   }
 ];
 
@@ -215,5 +216,33 @@ function testFillWithUnderScore() {
     var filled = fillWithUnderScore('name', 3);
     t.equal(filled, 'name', 'filled with 0 _');
 
+  });
+}
+
+function testState() {
+
+  test('state enum', function (t) {
+    t.equal(PaState.OPEN, 'OPEN', 'OPEN');
+  });
+}
+
+function testNotVerifiedStudents() {
+  preSetupProjects_();
+  preSetupStudents_();
+
+  var projs = getProjects();
+  var notVstuds = notVerifiedStudents();
+
+  test('allProjects', function (t) {
+    t.equal(projs.length, 3, '3 projects');
+    t.equal(projs[0].data.name, 'Project1');
+    t.equal(projs[1].data.name, 'Project2');
+    t.equal(projs[2].data.name, 'Project3');
+  });
+
+  test('notVerifiedStudents', function (t) {
+    t.equal(notVstuds.length, 2, '2 not verified');
+    t.equal(notVstuds[0].lname, 'Dran');
+    t.equal(notVstuds[1].lname, 'Tomail');
   });
 }

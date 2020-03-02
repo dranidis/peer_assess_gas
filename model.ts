@@ -210,7 +210,7 @@ function getAllStudents(): Student[] {
 function addStudent(reg: Student) {
   var ss = SpreadsheetApp.getActive().getSheetByName(STUDENTS.sheet);
   ss.appendRow(
-    [reg.fname, reg.lname, reg.email, reg.projectkey, reg.personalkey, false]
+    [reg.fname, reg.lname, reg.email, reg.projectkey, reg.personalkey, reg.verified]
   )
 }
 
@@ -385,7 +385,7 @@ function getPaProjects(): Row<PaProject>[] {
   })
 }
 
-function getPaProject(paid, projectkey): Row<PaProject> {
+function getPaProject(paid: string, projectkey: string): Row<PaProject> {
   var pps = getPaProjects().filter(function(pp) {
     return pp.data.pakey == paid && pp.data.projectkey == projectkey
   });
@@ -551,7 +551,7 @@ Log
 
 */
 
-function sheetLog(string: string) {
+function sheetLog(string: any) {
   var ss = SpreadsheetApp.getActive().getSheetByName(LOG.sheet)
   ss.appendRow([string])
 }
@@ -584,7 +584,7 @@ function installSettings() {
   setSh.autoResizeColumns(1,3);
 }
 
-function getSettings() {
+function getSettings(): Settings {
   return getData_(SETTINGS).reduce(function(object, s) {
     object[s.KEY] = s.VALUE;
     return object;

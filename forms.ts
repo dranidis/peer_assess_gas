@@ -1,4 +1,4 @@
-function setUpPeerAssessmentForm_(pa, project, questions) {
+function setUpPeerAssessmentForm_(pa: PeerAssessment, project: Row<Project>, questions: string[]) {
     var ss = SpreadsheetApp.getActive();
 
     var form = FormApp.create('Peer Assessment Form: ' + pa.name + " for " + project.data.key);
@@ -12,30 +12,27 @@ function setUpPeerAssessmentForm_(pa, project, questions) {
             .setCollectEmail(true)
     } else {
         form.setRequireLogin(false)
-        var emailVal = FormApp.createTextValidation().requireTextIsEmail().build();
-        var emailItem = form.addTextItem().setTitle('email').setRequired(true)
+        var emailVal = FormApp.createTextValidation().requireTextIsEmail();
+        var emailItem = form.addTextItem().setTitle('email').setRequired(true);
         emailItem.setValidation(emailVal)
 
         var keyItem = form.addTextItem().setTitle('personal key').setRequired(true);
     }
 
     var students = getStudents(project.data.key);
-    var studentNames = []
-    for (var s = 0; s < students.length; s++) {
-        studentNames[s] = students[s].fname + " " + students[s].lname;
-    }
+    let studentNames: string[] = students.map(s => s.fname + " " + s.lname);
 
-    for (var i = 0; i < questions.length; i++) {
-        var item = form.addGridItem().setTitle(questions[i])
+    for (let question of questions) {
+      let item = form.addGridItem().setTitle(question)
             .setRows(studentNames)
             .setRequired(true)
-            .setColumns([1, 2, 3, 4, 5])
+            .setColumns(['1', '2', '3', '4', '5'])
             .setHelpText("1: Strongly Disagree - 5: Strongly Agree");
     }
 
-    for (var i = 0; i < students.length; i++) {
-        var item = form.addParagraphTextItem();
-        item.setTitle("Comments for " + studentNames[i])
+    for (let studentName of studentNames) {
+        let item = form.addParagraphTextItem();
+        item.setTitle("Comments for " + studentName)
         .setHelpText("Comments are welcome and required in cases of extreme assessment (i.e. 1 or 5)")
     }
     savePeerAssessmentLinks(pa.id, project.data.key, form);
@@ -70,13 +67,13 @@ function installRegistrationForm() {
         allow users outside the domain to use the form
         */
         form.setRequireLogin(false);
-        var item = form.addTextItem().setTitle('email').setRequired(true)
-        var emailVal = FormApp.createTextValidation().requireTextIsEmail().build();
+        let item = form.addTextItem().setTitle('email').setRequired(true)
+        var emailVal = FormApp.createTextValidation().requireTextIsEmail();
         item.setValidation(emailVal);
     }
 
     // form.addTextItem().setTitle('project key').setRequired(true);
-    var item = form.addMultipleChoiceItem();
+    let item = form.addMultipleChoiceItem();
     item.setTitle('Select your project').setRequired(true);
 
     item.setChoiceValues(getProjectKeys())
@@ -104,8 +101,8 @@ function installVerificationForm() {
         allow users outside the domain to use the form
         */
         .setRequireLogin(false);
-        
-    var emailVal = FormApp.createTextValidation().requireTextIsEmail().build();
+
+    var emailVal = FormApp.createTextValidation().requireTextIsEmail();
     form.addTextItem().setTitle('email').setRequired(true).setValidation(emailVal);
     form.addTextItem().setTitle('personal key').setRequired(true);
 

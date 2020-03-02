@@ -245,4 +245,5 @@ function testNotVerifiedStudents() {
     t.equal(notVstuds[0].lname, 'Dran');
     t.equal(notVstuds[1].lname, 'Tomail');
   });
+
 }

@@ -2,11 +2,11 @@ var my_MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
 var my_MILLIS_PER_HOUR = 1000 * 60 * 60;
 var my_MILLIS_PER_MINUTE = 1000 * 60;
 
-function getReminderTime(deadline, reminderIndex) {
+function getReminderTime(deadline, reminderIndex): Date {
   const settings = getSettings();
   const x = settings['reminder' + reminderIndex];
 
-  var unit = null;
+  let unit: number;
   switch (settings.timeunit) {
     case 'min':
       unit = my_MILLIS_PER_MINUTE;
@@ -37,12 +37,12 @@ var ARGUMENTS_KEY = "arguments";
  *
  * @param {Trigger} trigger - The trigger for which the arguments are set up
  * @param {*} functionArguments - The arguments which should be stored for the function call
- * @param {boolean} recurring - Whether the trigger is recurring; if not the 
+ * @param {boolean} recurring - Whether the trigger is recurring; if not the
  *   arguments and the trigger are removed once it called the function
  */
 function setupTriggerArguments(trigger, functionArguments, recurring) {
-  var triggerUid = trigger.getUniqueId();
-  var triggerData = {};
+  const triggerUid = trigger.getUniqueId();
+  const triggerData = {};
   triggerData[RECURRING_KEY] = recurring;
   triggerData[ARGUMENTS_KEY] = functionArguments;
 
@@ -50,15 +50,15 @@ function setupTriggerArguments(trigger, functionArguments, recurring) {
 }
 
 /**
- * Function which should be called when a trigger runs a function. Returns the stored arguments 
+ * Function which should be called when a trigger runs a function. Returns the stored arguments
  * and deletes the properties entry and trigger if it is not recurring.
  *
  * @param {string} triggerUid - The trigger id
  * @return {*} - The arguments stored for this trigger
  */
 function handleTriggered(triggerUid) {
-  var scriptProperties = PropertiesService.getScriptProperties();
-  var triggerData = JSON.parse(scriptProperties.getProperty(triggerUid));
+  const scriptProperties = PropertiesService.getScriptProperties();
+  const triggerData = JSON.parse(scriptProperties.getProperty(triggerUid));
 
   if (!triggerData[RECURRING_KEY]) {
     deleteTriggerByUid(triggerUid);
@@ -78,9 +78,9 @@ function deleteTriggerArguments(triggerUid) {
 
 /**
  * Deletes a trigger with the given id and its arguments.
- * When no project trigger with the id was found only an error is 
+ * When no project trigger with the id was found only an error is
  * logged and the function continues trying to delete the arguments.
- * 
+ *
  * @param {string} triggerUid - The trigger id
  */
 function deleteTriggerByUid(triggerUid) {
@@ -100,7 +100,7 @@ function deleteTriggerByUid(triggerUid) {
 
 /**
  * Deletes a trigger and its arguments.
- * 
+ *
  * @param {Trigger} trigger - The trigger
  */
 function deleteTrigger(trigger) {

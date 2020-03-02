@@ -4,5 +4,6 @@ interface Settings {
   penalty: number,
   domain: boolean,
   mailpa: boolean,
-  mailgrade: boolean
+  mailgrade: boolean,
+  timeunit: string
 }

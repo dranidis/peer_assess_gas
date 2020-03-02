@@ -25,22 +25,22 @@
 }
 
 function renameSheets() {
-  var projects = getProjects();
-  for (var i = projects.length - 1; i >= 0; i--) {
-    var paid = PropertiesService.getScriptProperties().getProperty("PA")
+  const projects = getProjects();
+  for (let i = projects.length - 1; i >= 0; i--) {
+    const paid = PropertiesService.getScriptProperties().getProperty("PA")
 
-    var pp = getPaProject(paid, projects[i].data.key)
-    var sh = getFormResponseSheet_(pp.data.formId)
+    const pp = getPaProject(paid, projects[i].data.key)
+    let sh = getFormResponseSheet_(pp.data.formId)
     sh.setName(paid + ":" + projects[i].data.key + " responses")
     sh.hideSheet();
   }
 }
 
 function setAcceptingResponsesForProjects(paid: string, enabled: boolean) {
-  var projects = getProjects();
+  const projects = getProjects();
   for (let project of projects) {
-    var pp = getPaProject(paid, project.data.key);
-    var form = FormApp.openById(pp.data.formId);
+    const pp = getPaProject(paid, project.data.key);
+    const form = FormApp.openById(pp.data.formId);
     form.setAcceptingResponses(enabled);
   }
 }
@@ -57,23 +57,23 @@ function setNewDeadline(pa: PeerAssessment) {
 
 
 function createPATriggers_(pa: PeerAssessment) {
-  var deadline = pa.deadline;
+  const deadline = pa.deadline;
 
-  var triggerClose = ScriptApp.newTrigger('closePATriggered').timeBased().at(deadline).create();
+  const triggerClose = ScriptApp.newTrigger('closePATriggered').timeBased().at(deadline).create();
   setupTriggerArguments(triggerClose, [pa.id], false);
 
-  var triggerNow = ScriptApp.newTrigger('sendReminderToNonSubmissionsTriggered')
+  const triggerNow = ScriptApp.newTrigger('sendReminderToNonSubmissionsTriggered')
     .timeBased().after(5000).create();
   setupTriggerArguments(triggerNow, [pa.id], false);
 
-  var time1 = getReminderTime(deadline, 1);
-  var time2 = getReminderTime(deadline, 2);
+  const time1 = getReminderTime(deadline, 1);
+  const time2 = getReminderTime(deadline, 2);
 
-  var trigger1 = ScriptApp.newTrigger('sendReminderToNonSubmissionsTriggered')
+  const trigger1 = ScriptApp.newTrigger('sendReminderToNonSubmissionsTriggered')
     .timeBased().at(time1).create();
   setupTriggerArguments(trigger1, [pa.id], false);
 
-  var trigger2 = ScriptApp.newTrigger('sendReminderToNonSubmissionsTriggered')
+  const trigger2 = ScriptApp.newTrigger('sendReminderToNonSubmissionsTriggered')
     .timeBased().at(time2).create();
   setupTriggerArguments(trigger2, [pa.id], false);
 
@@ -81,14 +81,14 @@ function createPATriggers_(pa: PeerAssessment) {
 }
 
 function sendReminderToNonSubmissionsTriggered(event) {
-  var functionArguments = handleTriggered(event.triggerUid);
-  var pa = getPA(functionArguments);
+  const functionArguments = handleTriggered(event.triggerUid);
+  const pa = getPA(functionArguments);
   sendReminderToNonSubmissions(pa);
 }
 
 function closePATriggered(event) {
-  var functionArguments = handleTriggered(event.triggerUid);
-  var pa = getPA(functionArguments);
+  const functionArguments = handleTriggered(event.triggerUid);
+  const pa = getPA(functionArguments);
   closePA(pa);
 }
 

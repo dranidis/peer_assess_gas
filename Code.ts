@@ -16,7 +16,12 @@
   PropertiesService.getScriptProperties().setProperty("PA", pa.id)
 
   for (let project of projects) {
-    setUpPeerAssessmentForm_(pa, project, questions);
+    let students = getStudents(project.data.key);
+    if (students.length > 1) {
+      setUpPeerAssessmentForm_(pa, project, questions, students);
+    } else {
+      sheetLog(`Not enough students in project: ${project.data.name}. Only ${students.length}!`);
+    }
   }
 
   createPATriggers_(pa);
@@ -30,6 +35,10 @@ function renameSheets() {
     const paid = PropertiesService.getScriptProperties().getProperty("PA")
 
     const pp = getPaProject(paid, projects[i].data.key)
+    if (pp == null) {
+      sheetLog(`No PA project row found for ${paid} and ${projects[i].data.key}.`);
+      return;
+    }
     let sh = getFormResponseSheet_(pp.data.formId)
     sh.setName(paid + ":" + projects[i].data.key + " responses")
     sh.hideSheet();

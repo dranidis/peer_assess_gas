@@ -40,7 +40,7 @@ let testStudents: Student[] = [
     lname: 'Dranidis',
     email: 'dranidis@gmail.com',
     projectkey: 'PROJ123',
-    personalkey: '',
+    personalkey: 'aaaaa',
     verified: true,
     submittedpa: {}
   },

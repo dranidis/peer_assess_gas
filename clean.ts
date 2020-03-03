@@ -10,8 +10,7 @@ function deletePASheets() {
     for (let p = 0; p < projects.length; p++) {
 
       let pp = getPaProject(pas[i].id, projects[p].data.key);
-
-      if (pp.data.formId == "") { continue; }
+      if (pp == null || pp.data.formId == "") { continue; }
 
       let form = FormApp.openById(pp.data.formId);
 

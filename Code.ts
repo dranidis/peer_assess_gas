@@ -42,6 +42,8 @@ function renameSheets() {
     let sh = getFormResponseSheet_(pp.data.formId)
     sh.setName(paid + ":" + projects[i].data.key + " responses")
     sh.hideSheet();
+
+    sheetLog(`TRIGGER: Renamed sheet for  ${paid} and ${projects[i].data.key}.`);
   }
 }
 

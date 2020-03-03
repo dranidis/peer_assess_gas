@@ -20,6 +20,20 @@ if ((typeof GasTap) === 'undefined') { // GasT Initialization. (only if not init
 
 let test = new GasTap();
 
+/**
+ * IMPORTANT:
+ *
+ * SET TO TRUE for executing e2e tests
+ * REMEMBER to reset to false afterwards!!
+ */
+let testMode: boolean = false;
+/**
+ *
+ *
+ *
+ */
+
+
 function gastTestRunner() {
   testgetProjects();
   testGetGroup();
@@ -250,10 +264,19 @@ function testNotVerifiedStudents() {
  * e2e test
  */
 function testOpenPA() {
+
   preSetupProjects_();
   preSetupStudents_();
   preSetupPA();
 
+  deletePASheets();
+
   let pas = getPAs();
   openPA(pas[0]);
+
+  let updatedPa = getPA(pas[0].id);
+
+  test('peer assesment', function (t) {
+    t.equal(updatedPa.state, PaState.OPEN, 'is opened');
+  });
 }

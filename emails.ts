@@ -12,15 +12,16 @@ function sendEmailForConfirmation_(student: Student) {
   template.link = link;
   template.key = key;
 
-//  Logger.log(template.evaluate().getContent())
+  //  Logger.log(template.evaluate().getContent())
 
-  GmailApp.sendEmail(
+  sendEmailWrapper(
     email,
     "PA: Confirm your registration",
     'In order to complete your registration please visit this ' + link + '"',
     {                        // body
       htmlBody: template.evaluate().getContent()                 // advanced options
-    })
+    }
+  );
 }
 
 function sendSubmissionMail(student: Student, paname: string, editURL: string) {
@@ -31,8 +32,8 @@ function sendSubmissionMail(student: Student, paname: string, editURL: string) {
   template.pa = paname;
   template.project = student.projectkey;
 
-//  Logger.log(template.evaluate().getContent())
-  GmailApp.sendEmail(
+  //  Logger.log(template.evaluate().getContent())
+  sendEmailWrapper(
     student.email,
     "PA: Successful submission of peer assessment",
     'Congratulations! You have successfully completed your peer assessment',
@@ -46,7 +47,7 @@ function sendEmailForSuccess(student: Student) {
   var template = HtmlService.createTemplateFromFile("html/successful.html");
   template.name = student.fname
   template.key = student.personalkey
-  GmailApp.sendEmail(
+  sendEmailWrapper(
     student.email,
     "PA: Successful registration",
     'Congratulations! You have successfully completed your registration.\nKeep your ' +
@@ -75,9 +76,9 @@ function sendReminderPA_(pa: PeerAssessment, student: Student) {
     template.key = "Your personal key is: " + student.personalkey + ". "
   }
 
-//  Logger.log(template.evaluate().getContent())
+  //  Logger.log(template.evaluate().getContent())
 
-  GmailApp.sendEmail(
+  sendEmailWrapper(
     email,
     "PA: Reminder for peer assessment: " + pa.name,
     'This is a reminder that you need to complete your peer assessment. Note that there is a penalty for not completing the peer assessment.',
@@ -94,22 +95,22 @@ function sendEmailResults(pa: PeerAssessment, student: Student, grade: number, p
   template.name = student.fname;
   template.pa = pa.name;
 
-  if(settings.mailpa) {
+  if (settings.mailpa) {
     template.pascore = "Your peer assessment score is " + pascore + ".";
   } else {
     template.pascore = "";
   }
 
-  if(settings.mailgrade) {
+  if (settings.mailgrade) {
     template.grade = "Your peer adjusted grade is " + grade + ".";
   } else {
     template.grade = "";
   }
 
 
-//  Logger.log(template.evaluate().getContent())
+  //  Logger.log(template.evaluate().getContent())
 
-  GmailApp.sendEmail(
+  sendEmailWrapper(
     student.email,
     "PA: Results for peer assessment: " + pa.name,
     '',
@@ -118,3 +119,18 @@ function sendEmailResults(pa: PeerAssessment, student: Student, grade: number, p
     })
 }
 
+
+function sendEmailWrapper(
+  recipient: string,
+  subject: string,
+  body: string,
+  options: GoogleAppsScript.Gmail.GmailAdvancedOptions) {
+
+  if (testMode) {
+    sheetLog('MOCKING REMINDER EMAIL SENT');
+    sheetLog(options.htmlBody);
+    return;
+  }
+
+  GmailApp.sendEmail(recipient, subject, body, options);
+};

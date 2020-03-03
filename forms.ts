@@ -12,9 +12,11 @@ function setUpPeerAssessmentForm_(pa: PeerAssessment, project: Row<Project>, que
             .setCollectEmail(true)
     } else {
         form.setRequireLogin(false)
-        var emailVal = FormApp.createTextValidation().requireTextIsEmail();
+        var emailVal = FormApp.createTextValidation().requireTextIsEmail()
+          .build(); // NECESSARY ALTHOUGH TS does not recognize it!
+
         var emailItem = form.addTextItem().setTitle('email').setRequired(true);
-        emailItem.setValidation(emailVal)
+        emailItem.setValidation(emailVal);
 
         var keyItem = form.addTextItem().setTitle('personal key').setRequired(true);
     }
@@ -68,7 +70,9 @@ function installRegistrationForm() {
         */
         form.setRequireLogin(false);
         let item = form.addTextItem().setTitle('email').setRequired(true)
-        var emailVal = FormApp.createTextValidation().requireTextIsEmail();
+        var emailVal = FormApp.createTextValidation().requireTextIsEmail()
+          .build(); // NECESSARY ALTHOUGH TS shows error
+
         item.setValidation(emailVal);
     }
 
@@ -102,7 +106,9 @@ function installVerificationForm() {
         */
         .setRequireLogin(false);
 
-    var emailVal = FormApp.createTextValidation().requireTextIsEmail();
+    var emailVal = FormApp.createTextValidation().requireTextIsEmail()
+    .build(); // NECESSARY ALTHOUGH TS shows error!
+
     form.addTextItem().setTitle('email').setRequired(true).setValidation(emailVal);
     form.addTextItem().setTitle('personal key').setRequired(true);
 

@@ -10,7 +10,7 @@
  * The lines are commented to allow menu installation easily for users.
  */
 if ((typeof GasTap) === 'undefined') { // GasT Initialization. (only if not initialized yet.)
-  var cs = CacheService.getScriptCache().get('gast');
+  let cs = CacheService.getScriptCache().get('gast');
   if (!cs) {
     cs = UrlFetchApp.fetch('https://raw.githubusercontent.com/zixia/gast/master/src/gas-tap-lib.js').getContentText();
     CacheService.getScriptCache().put('gast', cs, 21600);
@@ -18,7 +18,7 @@ if ((typeof GasTap) === 'undefined') { // GasT Initialization. (only if not init
   eval(cs);
 } // Class GasTap is ready for use now!
 
-var test = new GasTap()
+let test = new GasTap();
 
 function gastTestRunner() {
   testgetProjects();
@@ -29,10 +29,12 @@ function gastTestRunner() {
   testGetStudent();
   testCalculateGrade();
   testNotVerifiedStudents();
+  testFillWithUnderScore();
+  testState();
   test.finish();
 }
 
-var testStudents = [
+let testStudents: Student[] = [
   {
     fname: 'Dimitris',
     lname: 'Dranidis',
@@ -40,6 +42,7 @@ var testStudents = [
     projectkey: 'PROJ123',
     personalkey: '',
     verified: true,
+    submittedpa: {}
   },
   {
     fname: 'DD',
@@ -48,6 +51,7 @@ var testStudents = [
     projectkey: 'PROJ456',
     personalkey: '',
     verified: false,
+    submittedpa: {}
   },
   {
     fname: 'Dimi',
@@ -56,10 +60,11 @@ var testStudents = [
     projectkey: 'PROJ123',
     personalkey: '',
     verified: false,
+    submittedpa: {}
   }
 ];
 
-var testProjects = [
+let testProjects: Project[] = [
   {
     name: 'Project1',
     key: 'PROJ123',
@@ -74,36 +79,36 @@ var testProjects = [
   }
 ];
 
-var testPAs = [
+let testPAs: PeerAssessment[] = [
   {
     name: "Peer Assessment 1",
     id: "PA1",
     deadline: new Date((new Date()).getTime() + 15 * my_MILLIS_PER_MINUTE),
-    state: ""
+    state: PaState.INACTIVE
   }
 ]
 
 function preSetupPA() {
-  var ss = SpreadsheetApp.getActive().getSheetByName(PAS.sheet);
+  let ss = SpreadsheetApp.getActive().getSheetByName(PAS.sheet);
   ss.getDataRange().offset(1, 0).clearContent();
 
-  for (var i = 0; i < testPAs.length; i++)
+  for (let i = 0; i < testPAs.length; i++)
     addPa(testPAs[i]);
 }
 
 function preSetupStudents_() {
-  var ss = SpreadsheetApp.getActive().getSheetByName(STUDENTS.sheet);
+  let ss = SpreadsheetApp.getActive().getSheetByName(STUDENTS.sheet);
   ss.getDataRange().offset(1, 0).clearContent();
 
-  for (var i = 0; i < testStudents.length; i++)
+  for (let i = 0; i < testStudents.length; i++)
     addStudent(testStudents[i]);
 }
 
 function preSetupProjects_() {
-  var ss = SpreadsheetApp.getActive().getSheetByName(PROJECTS.sheet);
+  let ss = SpreadsheetApp.getActive().getSheetByName(PROJECTS.sheet);
   ss.getDataRange().offset(1, 0).clearContent();
 
-  for (var i = 0; i < testProjects.length; i++)
+  for (let i = 0; i < testProjects.length; i++)
     addProject(testProjects[i]);
 }
 
@@ -111,8 +116,8 @@ function testgetProjects() {
   preSetupProjects_();
 
   test('getProjects', function (t) {
-    var act = getProjects();
-    for (i = 0; i < act.length; i++) {
+    let act = getProjects();
+    for (let i = 0; i < act.length; i++) {
       t.equal(act[i].data.name, testProjects[i].name, 'getProjects name' + i);
       t.equal(act[i].data.key, testProjects[i].key, 'getProjects key' + i);
     }
@@ -123,10 +128,10 @@ function testGetProjectKeys() {
   preSetupProjects_();
 
   test('testGetProjectKeys', function (t) {
-    var act = getProjectKeys();
+    let act = getProjectKeys();
     t.equal(act.length, testProjects.length, 'length');
 
-    for (i = 0; i < act.length; i++) {
+    for (let i = 0; i < act.length; i++) {
       t.equal(act[i], testProjects[i].key, 'key' + i);
     }
   });
@@ -136,12 +141,12 @@ function testIsProjectkey() {
   preSetupProjects_();
 
   test('isProjectkey', function (t) {
-    var isKey = isProjectkey(testProjects[0].key);
+    let isKey = isProjectkey(testProjects[0].key);
     t.ok(isKey, 'isProjectkey')
   });
 
   test('isProjectkey', function (t) {
-    var isKey = isProjectkey("projX");
+    let isKey = isProjectkey("projX");
     t.notOk(isKey, 'not isProjectkey')
   });
 }
@@ -150,12 +155,12 @@ function testGetGroup() {
   preSetupStudents_();
 
   test('getGroup', function (t) {
-    var group = getGroup(testStudents[0].email);
+    let group = getGroup(testStudents[0].email);
     t.equal(group, testStudents[0].projectkey, 'getGroup first row')
   });
 
   test('getGroup', function (t) {
-    var group = getGroup("whos@citycollege.sheffield.eu");
+    let group = getGroup("whos@citycollege.sheffield.eu");
     t.equal(group, null, 'getGroup not existing')
   });
 }
@@ -164,7 +169,7 @@ function testGetStudents() {
   preSetupStudents_();
 
   test('getStudents', function (t) {
-    var act = getStudents(testStudents[0].projectkey);
+    let act = getStudents(testStudents[0].projectkey);
     t.equal(act[0].email, testStudents[0].email, 'getStudents 0')
     t.equal(act[1].email, testStudents[2].email, 'getStudents 2')
   });
@@ -174,46 +179,36 @@ function testGetStudent() {
   preSetupStudents_();
 
   test('getStudent', function (t) {
-    var act = getStudent(testStudents[2].email);
+    let act = getStudent(testStudents[2].email);
     Logger.log(act);
     t.equal(act.data.email, testStudents[2].email, 'getStudent');
   });
 
   test('getStudent', function (t) {
-    var act = getStudent("some@gmail.com");
+    let act = getStudent("some@gmail.com");
     t.equal(act, null, 'getStudent null');
   });
 }
 
 function testCalculateGrade() {
   test('calculateGrade', function (t) {
-    var grade = calculateGrade(80, 0.41, .5, .1)
+    let grade = calculateGrade(80, 0.41, .5, .1)
     t.equal(grade, 50.76, 'calculateGrade a');
-    var grade = calculateGrade(70, 1.05, .7, .2)
+    grade = calculateGrade(70, 1.05, .7, .2)
     t.equal(grade, 57.96, 'calculateGrade b');
   });
-}
-
-
-function testOpenPA() {
-  preSetupProjects_();
-  preSetupStudents_();
-  preSetupPA();
-
-  var pas = getPAs();
-  openPA(pas[0]);
 }
 
 function testFillWithUnderScore() {
 
   test('fillWithUnderScore', function (t) {
-    var filled = fillWithUnderScore('name', 10);
+    let filled = fillWithUnderScore('name', 10);
     t.equal(filled, 'name______', 'filled with 6 _');
 
-    var filled = fillWithUnderScore('name', 4);
+    filled = fillWithUnderScore('name', 4);
     t.equal(filled, 'name', 'filled with 0 _');
 
-    var filled = fillWithUnderScore('name', 3);
+    filled = fillWithUnderScore('name', 3);
     t.equal(filled, 'name', 'filled with 0 _');
 
   });
@@ -230,8 +225,8 @@ function testNotVerifiedStudents() {
   preSetupProjects_();
   preSetupStudents_();
 
-  var projs = getProjects();
-  var notVstuds = notVerifiedStudents();
+  let projs = getProjects();
+  let notVstuds = notVerifiedStudents();
 
   test('allProjects', function (t) {
     t.equal(projs.length, 3, '3 projects');
@@ -246,4 +241,19 @@ function testNotVerifiedStudents() {
     t.equal(notVstuds[1].lname, 'Tomail');
   });
 
+}
+
+
+
+
+/**
+ * e2e test
+ */
+function testOpenPA() {
+  preSetupProjects_();
+  preSetupStudents_();
+  preSetupPA();
+
+  let pas = getPAs();
+  openPA(pas[0]);
 }

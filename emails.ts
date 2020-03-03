@@ -61,11 +61,18 @@ function sendEmailForSuccess(student: Student) {
 function sendReminderPA_(pa: PeerAssessment, student: Student) {
   var sp = SpreadsheetApp.getActive();
   var deadline = new Date(pa.deadline);
-  var formId = getPaProject(pa.id, student.projectkey).data.formId;
-  var link = FormApp.openById(formId).getPublishedUrl();
-  var email = student.email;
 
-  var template = HtmlService.createTemplateFromFile("html/reminder.html");
+  let pp =  getPaProject(pa.id, student.projectkey);
+  if (pp == null) {
+    sheetLog(`sendReminderPA_: No PA project row found for ${pa.id} and ${student.projectkey}.`);
+    return;
+  }
+
+  let formId = pp.data.formId;
+  let link = FormApp.openById(formId).getPublishedUrl();
+  let email = student.email;
+
+  let template = HtmlService.createTemplateFromFile("html/reminder.html");
   template.name = student.fname;
   template.link = link;
   template.key = "";

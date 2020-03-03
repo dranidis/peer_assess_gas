@@ -37,7 +37,7 @@ function renameSheets() {
     const pp = getPaProject(paid, projects[i].data.key)
     if (pp == null) {
       sheetLog(`No PA project row found for ${paid} and ${projects[i].data.key}.`);
-      return;
+      continue;
     }
     let sh = getFormResponseSheet_(pp.data.formId)
     sh.setName(paid + ":" + projects[i].data.key + " responses")
@@ -51,6 +51,10 @@ function setAcceptingResponsesForProjects(paid: string, enabled: boolean) {
   const projects = getProjects();
   for (let project of projects) {
     const pp = getPaProject(paid, project.data.key);
+    if (pp == null) {
+      sheetLog(`closePA: No PA project row found for ${paid} and ${project.data.key}.`);
+      continue;
+    }
     const form = FormApp.openById(pp.data.formId);
     form.setAcceptingResponses(enabled);
   }
@@ -106,8 +110,12 @@ function closePATriggered(event) {
 function closePA(pa: PeerAssessment) {
   var projects = getProjects();
   for (let project of projects) {
-    var pp = getPaProject(pa.id, project.data.key);
-    var form = FormApp.openById(pp.data.formId);
+    let pp = getPaProject(pa.id, project.data.key);
+    if (pp == null) {
+      sheetLog(`closePA: No PA project row found for ${pa.id} and ${project.data.key}.`);
+      continue;
+    }
+    let form = FormApp.openById(pp.data.formId);
     form.setAcceptingResponses(false);
     form.setCustomClosedFormMessage(`The peer assessment ${pa.name} has closed due to past deadline.`);
   }

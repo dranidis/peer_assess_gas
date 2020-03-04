@@ -1,8 +1,8 @@
 let PROJECTS: Sheet = {
   sheet: 'Projects',
   columns: [
-    fillWithUnderScore("NAME", 15),
-    fillWithUnderScore("KEY",	15),
+    fillWithUnderScore("NAME", 20),
+    fillWithUnderScore("KEY",	20),
     "No of Students",
     "No of Verified Students"],
   fields: ["name", "key", "noStudents", "noVerifiedStudents"],
@@ -17,7 +17,7 @@ let STUDENTS: Sheet = {
     fillWithUnderScore("FIRST NAME",	15),
     fillWithUnderScore("LAST NAME",	15),
     fillWithUnderScore("EMAIL",	35),
-    fillWithUnderScore("PROJECT KEY",	15),
+    fillWithUnderScore("PROJECT KEY",	20),
     "PERSONAL KEY",
     "VERIFIED"],
   fields: ["fname", "lname", "email", "projectkey", "personalkey", "verified"],
@@ -87,25 +87,24 @@ let LOG: Sheet = {
 let SHEETS = [STUDENTS, PROJECTS, PAS, PA_PROJECTS, QUESTIONS, SETTINGS, LINKS, LOG]
 
 
-/*
-reads the data from any model sheet. Ignores the heading.
- sheetModel should have:
-  .sheet
-  .fields
-Returns an array of objects using the fields as attributes.
-Stops reading if no values in any field.
-*/
-function getData_(sheetModel: Sheet): any[] {
-  var sp = SpreadsheetApp.getActive().getSheetByName(sheetModel.sheet);
-  var values = sp.getDataRange().getValues();
-  var heading = values.shift();
-  var entries = [];
-  for(var i=0; i<values.length; i++) {
-    var value = values[i]
-    var entry = {};
+/**
+ * Reads the data from any model sheet. Ignores the heading.
+ * Returns an array of objects using the fields as attributes.
+ *
+ * Stops reading if no values in any field.
+ *
+ * @param sheetModel
+ */
+function getData_<T>(sheetModel: Sheet): T[] {
+  let sp = SpreadsheetApp.getActive().getSheetByName(sheetModel.sheet);
+  let values = sp.getDataRange().getValues();
+  let heading = values.shift();
+  let entries: T[] = [];
+  for(let value of values) {
+    let entry = {};
     var isData = false;
 
-    for(var c=0; c<value.length; c++) {
+    for(let c = 0; c < value.length; c++) {
       /*
       skip a field if is empty. Used for empty columns in spreadsheet.
       */
@@ -120,9 +119,24 @@ function getData_(sheetModel: Sheet): any[] {
     if (!isData) {
       break;
     }
-    entries[i] = entry;
+    entries.push(<T> entry);
   }
   return entries;
+}
+
+/**
+ * getRows<T> returns the entries in the sheet as
+ * an array of objects of type T.
+ * By default is starts reading on the 2nd row.
+ *
+ * @param sheet
+ * @param firstDataRow First row of data (default 2)
+ */
+function getRows_<T>(sheet: Sheet, firstDataRow = 2): Row<T>[] {
+  let i = firstDataRow;
+  return getData_<T>(sheet).map(function(entry) {
+    return {data: entry, row: i++}
+  })
 }
 
 
@@ -155,7 +169,7 @@ function installQuestions() {
 }
 
 function getQuestions(): string[] {
-  return getData_(QUESTIONS).map(function (q) {
+  return getData_<any>(QUESTIONS).map(function (q) {
     return q.question;
   });
 }
@@ -316,8 +330,6 @@ Projects
 
 */
 
-let PROJECTS_FIRST_ROW = 2
-
 function addProject(proj: Project) {
   var ss = SpreadsheetApp.getActive().getSheetByName(PROJECTS.sheet);
   ss.appendRow(
@@ -325,15 +337,10 @@ function addProject(proj: Project) {
   )
 }
 
-function getProjects(): Row<Project>[] {
-  var i = PROJECTS_FIRST_ROW;
-  return getData_(PROJECTS).map(function(p) {
-    return {data: {name: p.name, key: p.key}, row: i++}
-  })
-}
+function getProjects() { return getRows_<Project>(PROJECTS); }
 
 function isProjectkey(projectkey: string): boolean {
-  var projects = getData_(PROJECTS);
+  var projects = getData_<Project>(PROJECTS);
 
   for (var p=0; p < projects.length; p++) {
     if (projects[p].key == projectkey)
@@ -379,10 +386,7 @@ function getSheetColumn_(sheet: Sheet, colName: string): number {
 }
 
 function getPaProjects(): Row<PaProject>[] {
-  var i = PA_FIRST_ROW;
-  return getData_(PA_PROJECTS).map(function(p) {
-    return {data: p, row: i++}
-  })
+  return getRows_<PaProject>(PA_PROJECTS);
 }
 
 function getPaProject(paid: string, projectkey: string): Row<PaProject> {
@@ -479,7 +483,7 @@ function readPA(row): PeerAssessment {
 }
 
 function getPAs(): PeerAssessment[] {
-  return getData_(PAS);
+  return getData_<PeerAssessment>(PAS);
 }
 
 function getPA(paId: string) {
@@ -512,7 +516,7 @@ Links
 
 */
 function getLinks() {
-  return getData_(LINKS).reduce(function(object, s) {
+  return getData_<any>(LINKS).reduce(function(object, s) {
     object[s.formName] = s.id;
     return object;
   }, {});
@@ -585,7 +589,7 @@ function installSettings() {
 }
 
 function getSettings(): Settings {
-  return getData_(SETTINGS).reduce(function(object, s) {
+  return getData_<any>(SETTINGS).reduce(function(object, s) {
     object[s.KEY] = s.VALUE;
     return object;
   }, {});

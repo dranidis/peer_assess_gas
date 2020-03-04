@@ -33,7 +33,7 @@ function testCreateSheet() {
 }
 
 
-function testGetQuestions() {
+function testPrintQuestions() {
   var act = getQuestions();
   for(i=0; i < act.length; i++)
       Logger.log("testGetQuestions: " + act[i]);

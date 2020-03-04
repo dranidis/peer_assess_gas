@@ -8,7 +8,6 @@
  * @param pa
  */
  function openPA(pa: PeerAssessment) {
-  var sp = SpreadsheetApp.getActive()
   var projects = getProjects();
   var questions = getQuestions();
   sortStudents(); // to make sure students to be assessed appear in the same order

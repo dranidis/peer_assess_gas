@@ -45,6 +45,10 @@ function gastTestRunner() {
   testNotVerifiedStudents();
   testFillWithUnderScore();
   testState();
+  testGetPaProjects();
+  testGetQuestions();
+  testGetSettings();
+  testGetLinks();
   test.finish();
 }
 
@@ -122,8 +126,8 @@ function preSetupProjects_() {
   let ss = SpreadsheetApp.getActive().getSheetByName(PROJECTS.sheet);
   ss.getDataRange().offset(1, 0).clearContent();
 
-  for (let i = 0; i < testProjects.length; i++)
-    addProject(testProjects[i]);
+  for (let project of testProjects)
+    addProject(project);
 }
 
 function testgetProjects() {
@@ -131,6 +135,7 @@ function testgetProjects() {
 
   test('getProjects', function (t) {
     let act = getProjects();
+    t.equal(act.length, testProjects.length, 'number is right')
     for (let i = 0; i < act.length; i++) {
       t.equal(act[i].data.name, testProjects[i].name, 'getProjects name' + i);
       t.equal(act[i].data.key, testProjects[i].key, 'getProjects key' + i);
@@ -257,8 +262,36 @@ function testNotVerifiedStudents() {
 
 }
 
+function testGetQuestions() {
+  let questions = getQuestions();
+  test('getQuestions', function (t) {
+    t.equal(questions.length, 12, '12 questions');
+  });
+}
 
+function testGetSettings() {
+  let settings = getSettings();
+  test('getSettings', function (t) {
+    t.equal(settings.weight, 0.6);
+    t.equal(settings.penalty, 0.2);
+    t.equal(settings.self, false);
+    t.equal(settings.reminder1, 24);
+    t.equal(settings.reminder2, 6);
+    t.equal(settings.timeunit, 'hour');
+    t.equal(settings.mailpa, true);
+    t.equal(settings.mailgrade, true);
+    t.equal(settings.domain, false);
+  });
+}
 
+function testGetLinks() {
+  let links = getLinks();
+  test('getLinks', function (t) {
+    t.ok(links.Registration);
+    t.ok(links.Verification);
+  });
+}
+}
 
 /**
  * e2e test
@@ -279,4 +312,17 @@ function testOpenPA() {
   test('peer assesment', function (t) {
     t.equal(updatedPa.state, PaState.OPEN, 'is opened');
   });
+
+  testGetPaProjects();
+}
+
+function testGetPaProjects() {
+  let paProjects = getPaProjects();
+  test('pa projects', function (t) {
+    t.equal(paProjects.length, 1, ' on pa project');
+    t.equal(paProjects[0].data.pakey, getPAs()[0].id, 'pa key is correct');
+    t.equal(paProjects[0].data.projectkey, testProjects[0].key, 'project key is correct');
+    t.ok(paProjects[0].data.formId, 'there is a form id');
+  }
+
 }

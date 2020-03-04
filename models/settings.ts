@@ -5,5 +5,7 @@ interface Settings {
   domain: boolean,
   mailpa: boolean,
   mailgrade: boolean,
-  timeunit: string
+  timeunit: string,
+  reminder1: number,
+  reminder2: number
 }

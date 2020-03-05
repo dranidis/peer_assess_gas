@@ -23,13 +23,6 @@ function addMenu() {
     )
     .addItem('Help', 'showSidebar')
     .addToUi();
-
-    if (!checkInstalled()) {
-      Browser.msgBox('PA will now install all necessary sheets. Click OK and wait until'
-      + ' you see the message "Installation is complete."\n'
-      + ' If the message does not appear (this could be due to time-out) reload the page.');
-      installSheetsItem();
-    }
 }
 
 function getPAselected(pas: PeerAssessment[]): PeerAssessment {

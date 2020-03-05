@@ -17,6 +17,14 @@ function onOpen(e) {
     run as doc-script
   */
   addMenu();
+
+  if (!checkInstalled()) {
+    Browser.msgBox('PA will now install all necessary sheets. Click OK and wait until'
+    + ' you see the message "Installation is complete."\n'
+    + ' If the message does not appear (this could be due to time-out) reload the page.');
+    installSheetsItem();
+  }
+
 }
 
 /**
@@ -74,6 +82,8 @@ function install() {
 }
 
 function installForms() {
+  installFormSubmitTrigger(); // not on addon
+
   Logger.log("Curent registration form Id: " + getRegistrationFormId());
 
   var regForm = getRegistrationFormId();
@@ -98,7 +108,6 @@ function installForms() {
     return;
   }
 
-  installFormSubmitTrigger(); // not on addon
 }
 
 function addFormulas_() {
@@ -121,4 +130,3 @@ function installFormSubmitTrigger() {
   ScriptApp.newTrigger('onFormSubmit').forSpreadsheet(ss).onFormSubmit()
     .create();
 }
-

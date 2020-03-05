@@ -9,16 +9,16 @@
  *
  * The lines are commented to allow menu installation easily for users.
  */
-if ((typeof GasTap) === 'undefined') { // GasT Initialization. (only if not initialized yet.)
-  let cs = CacheService.getScriptCache().get('gast');
-  if (!cs) {
-    cs = UrlFetchApp.fetch('https://raw.githubusercontent.com/zixia/gast/master/src/gas-tap-lib.js').getContentText();
-    CacheService.getScriptCache().put('gast', cs, 21600);
-  }
-  eval(cs);
-} // Class GasTap is ready for use now!
+// if ((typeof GasTap) === 'undefined') { // GasT Initialization. (only if not initialized yet.)
+//   let cs = CacheService.getScriptCache().get('gast');
+//   if (!cs) {
+//     cs = UrlFetchApp.fetch('https://raw.githubusercontent.com/zixia/gast/master/src/gas-tap-lib.js').getContentText();
+//     CacheService.getScriptCache().put('gast', cs, 21600);
+//   }
+//   eval(cs);
+// } // Class GasTap is ready for use now!
 
-let test = new GasTap();
+// let test = new GasTap();
 
 /**
  * IMPORTANT:

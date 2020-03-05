@@ -73,9 +73,9 @@ function createPeerAssessmentForm(title: string, isDomain: boolean, studentNames
 
 
 function renameSheetReg() {
-    var sh = getFormResponseSheet_(getRegistrationFormId());
-    sh.setName("Registration responses")
-    sh.hideSheet();
+  let sh = getFormResponseSheet_(getRegistrationFormId());
+  sh.setName("Registration responses")
+  sh.hideSheet();
 }
 
 function installRegistrationForm() {
@@ -114,15 +114,15 @@ function installRegistrationForm() {
     item.setChoiceValues(getProjectKeys())
     .showOtherOption(false);
 
-    ScriptApp.newTrigger('renameSheetReg').timeBased().after(2000).create(); // make less, check name?
+    ScriptApp.newTrigger('renameSheetReg').timeBased().after(1000).create(); // make less, check name?
 
     setRegistrationLink(form);
 }
 
 function renameSheetVer() {
-    var sh = getFormResponseSheet_(getVerificationFormId());
-    sh.setName("Verification responses")
-    sh.hideSheet();
+  let sh = getFormResponseSheet_(getVerificationFormId());
+  sh.setName("Verification responses")
+  sh.hideSheet();
 }
 
 function installVerificationForm() {
@@ -143,10 +143,10 @@ function installVerificationForm() {
     form.addTextItem().setTitle('email').setRequired(true).setValidation(emailVal);
     form.addTextItem().setTitle('personal key').setRequired(true);
 
-    ScriptApp.newTrigger('renameSheetVer').timeBased().after(5000).create(); // make less, check name?
-
     var linksSheet = SpreadsheetApp.getActive().getSheetByName(LINKS.sheet);
-    linksSheet.getRange("B3").setValue(form.getPublishedUrl())
-    linksSheet.getRange("C3").setValue(form.getId())
-    linksSheet.getRange("A3").setValue("Verification")
+    linksSheet.getRange("B3").setValue(form.getPublishedUrl());
+    linksSheet.getRange("C3").setValue(form.getId());
+    linksSheet.getRange("A3").setValue("Verification");
+
+    ScriptApp.newTrigger('renameSheetVer').timeBased().after(1000).create(); // make less, check name?
 }

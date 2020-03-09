@@ -42,7 +42,9 @@ function createPeerAssessmentForm(title: string, isDomain: boolean, studentNames
   } else {
       form.setRequireLogin(false)
       var emailVal = FormApp.createTextValidation().requireTextIsEmail()
-        .build(); // NECESSARY ALTHOUGH TS does not recognize it!
+      // Ignore when working with clasp
+      // @ts-ignore
+      .build();
 
       var emailItem = form.addTextItem().setTitle('email').setRequired(true);
       emailItem.setValidation(emailVal);
@@ -102,7 +104,9 @@ function installRegistrationForm() {
         form.setRequireLogin(false);
         let item = form.addTextItem().setTitle('email').setRequired(true)
         var emailVal = FormApp.createTextValidation().requireTextIsEmail()
-          .build(); // NECESSARY ALTHOUGH TS shows error
+        // Ignore when working with clasp
+        // @ts-ignore
+        .build();
 
         item.setValidation(emailVal);
     }
@@ -138,7 +142,9 @@ function installVerificationForm() {
         .setRequireLogin(false);
 
     var emailVal = FormApp.createTextValidation().requireTextIsEmail()
-    .build(); // NECESSARY ALTHOUGH TS shows error!
+    // Ignore when working with clasp
+    // @ts-ignore
+    .build();
 
     form.addTextItem().setTitle('email').setRequired(true).setValidation(emailVal);
     form.addTextItem().setTitle('personal key').setRequired(true);

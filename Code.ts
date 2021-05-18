@@ -7,19 +7,21 @@
  *
  * @param pa
  */
- function openPA(pa: PeerAssessment) {
+function openPA(pa: PeerAssessment) {
   var projects = getProjects();
   var questions = getQuestions();
   sortStudents(); // to make sure students to be assessed appear in the same order
 
-  PropertiesService.getScriptProperties().setProperty("PA", pa.id)
+  PropertiesService.getScriptProperties().setProperty("PA", pa.id);
 
   for (let project of projects) {
     let students = getStudents(project.data.key);
     if (students.length > 1) {
       setUpPeerAssessmentForm_(pa, project, questions, students);
     } else {
-      sheetLog(`Not enough students in project: ${project.data.name}. Only ${students.length}!`);
+      sheetLog(
+        `Not enough students in project: ${project.data.name}. Only ${students.length}!`
+      );
     }
   }
 
@@ -31,18 +33,22 @@
 function renameSheets() {
   const projects = getProjects();
   for (let i = projects.length - 1; i >= 0; i--) {
-    const paid = PropertiesService.getScriptProperties().getProperty("PA")
+    const paid = PropertiesService.getScriptProperties().getProperty("PA");
 
-    const pp = getPaProject(paid, projects[i].data.key)
+    const pp = getPaProject(paid, projects[i].data.key);
     if (pp == null) {
-      sheetLog(`No PA project row found for ${paid} and ${projects[i].data.key}.`);
+      sheetLog(
+        `No PA project row found for ${paid} and ${projects[i].data.key}.`
+      );
       continue;
     }
-    let sh = getFormResponseSheet_(pp.data.formId)
-    sh.setName(paid + ":" + projects[i].data.key + " responses")
+    let sh = getFormResponseSheet_(pp.data.formId);
+    sh.setName(paid + ":" + projects[i].data.key + " responses");
     sh.hideSheet();
 
-    sheetLog(`TRIGGER: Renamed sheet for  ${paid} and ${projects[i].data.key}.`);
+    sheetLog(
+      `TRIGGER: Renamed sheet for  ${paid} and ${projects[i].data.key}.`
+    );
   }
 }
 
@@ -51,7 +57,9 @@ function setAcceptingResponsesForProjects(paid: string, enabled: boolean) {
   for (let project of projects) {
     const pp = getPaProject(paid, project.data.key);
     if (pp == null) {
-      sheetLog(`closePA: No PA project row found for ${paid} and ${project.data.key}.`);
+      sheetLog(
+        `closePA: No PA project row found for ${paid} and ${project.data.key}.`
+      );
       continue;
     }
     const form = FormApp.openById(pp.data.formId);
@@ -69,29 +77,39 @@ function setNewDeadline(pa: PeerAssessment) {
   sendReminderToNonSubmissions(pa);
 }
 
-
 function createPATriggers_(pa: PeerAssessment) {
   const deadline = pa.deadline;
 
-  const triggerClose = ScriptApp.newTrigger('closePATriggered').timeBased().at(deadline).create();
+  const triggerClose = ScriptApp.newTrigger("closePATriggered")
+    .timeBased()
+    .at(deadline)
+    .create();
   setupTriggerArguments(triggerClose, [pa.id], false);
 
-  const triggerNow = ScriptApp.newTrigger('sendReminderToNonSubmissionsTriggered')
-    .timeBased().after(5000).create();
+  const triggerNow = ScriptApp.newTrigger(
+    "sendReminderToNonSubmissionsTriggered"
+  )
+    .timeBased()
+    .after(5000)
+    .create();
   setupTriggerArguments(triggerNow, [pa.id], false);
 
   const time1 = getReminderTime(deadline, 1);
   const time2 = getReminderTime(deadline, 2);
 
-  const trigger1 = ScriptApp.newTrigger('sendReminderToNonSubmissionsTriggered')
-    .timeBased().at(time1).create();
+  const trigger1 = ScriptApp.newTrigger("sendReminderToNonSubmissionsTriggered")
+    .timeBased()
+    .at(time1)
+    .create();
   setupTriggerArguments(trigger1, [pa.id], false);
 
-  const trigger2 = ScriptApp.newTrigger('sendReminderToNonSubmissionsTriggered')
-    .timeBased().at(time2).create();
+  const trigger2 = ScriptApp.newTrigger("sendReminderToNonSubmissionsTriggered")
+    .timeBased()
+    .at(time2)
+    .create();
   setupTriggerArguments(trigger2, [pa.id], false);
 
-  ScriptApp.newTrigger('renameSheets').timeBased().after(10000).create(); // make less, check name?
+  ScriptApp.newTrigger("renameSheets").timeBased().after(10000).create(); // make less, check name?
 }
 
 function sendReminderToNonSubmissionsTriggered(event) {
@@ -111,12 +129,16 @@ function closePA(pa: PeerAssessment) {
   for (let project of projects) {
     let pp = getPaProject(pa.id, project.data.key);
     if (pp == null) {
-      sheetLog(`closePA: No PA project row found for ${pa.id} and ${project.data.key}.`);
+      sheetLog(
+        `closePA: No PA project row found for ${pa.id} and ${project.data.key}.`
+      );
       continue;
     }
     let form = FormApp.openById(pp.data.formId);
     form.setAcceptingResponses(false);
-    form.setCustomClosedFormMessage(`The peer assessment ${pa.name} has closed due to past deadline.`);
+    form.setCustomClosedFormMessage(
+      `The peer assessment ${pa.name} has closed due to past deadline.`
+    );
   }
   sendEmailClosedToInstructor_(pa);
 
@@ -126,11 +148,14 @@ function closePA(pa: PeerAssessment) {
 function deletePATriggers() {
   var triggers = ScriptApp.getProjectTriggers();
   for (var i = 0; i < triggers.length; i++) {
-    if (triggers[i].getHandlerFunction() == "sendReminderToNonSubmissionsTriggered") {
-      ScriptApp.deleteTrigger(triggers[i])
+    if (
+      triggers[i].getHandlerFunction() ==
+      "sendReminderToNonSubmissionsTriggered"
+    ) {
+      ScriptApp.deleteTrigger(triggers[i]);
     }
     if (triggers[i].getHandlerFunction() == "closePATriggered") {
-      ScriptApp.deleteTrigger(triggers[i])
+      ScriptApp.deleteTrigger(triggers[i]);
     }
   }
 }
@@ -142,12 +167,8 @@ function sendEmailClosedToInstructor_(pa: PeerAssessment) {
     Logger.log("FAILED TO GET " + Session.getActiveUser().getEmail());
     return;
   }
-  GmailApp.sendEmail(
-    email,
-    `PA: Assessment  ${pa.name}  has closed.`,
-    url)
+  GmailApp.sendEmail(email, `PA: Assessment  ${pa.name}  has closed.`, url);
 }
-
 
 function sendReminderToNonSubmissions(pa: PeerAssessment) {
   let st = getStudentsWhoDidNotSubmit(pa);
@@ -158,14 +179,14 @@ function sendReminderToNonSubmissions(pa: PeerAssessment) {
 
   var confirm = true;
 
-  try { // if called within a trigger
+  try {
+    // if called within a trigger
     confirm = showAlertBeforeMail_(st);
-  } catch (e) {
-  }
+  } catch (e) {}
 
   if (confirm) {
     for (let s = 0; s < st.length; s++) {
-      sendReminderPA_(pa, st[s])
+      sendReminderPA_(pa, st[s]);
     }
   }
 }
@@ -175,7 +196,7 @@ function getStudentsWhoDidNotSubmit(pa: PeerAssessment) {
   var studentsWhoDidNotSubmit: Student[] = [];
   var projects = getProjects();
   for (let project of projects) {
-    var students = getStudents(project.data.key).filter(s => {
+    var students = getStudents(project.data.key).filter((s) => {
       if (isDomain) {
         return !s.submittedpa[pa.id];
       }
@@ -206,12 +227,11 @@ function sendReminderForConfirmation() {
   }
 }
 
-
 function notVerifiedStudents(): Student[] {
   let notVerified: Student[] = [];
   let projects = getProjects();
   for (let project of projects) {
-    let students = getStudents(project.data.key).filter(s => !s.verified);
+    let students = getStudents(project.data.key).filter((s) => !s.verified);
     for (let student of students) {
       notVerified.push(student);
     }
@@ -219,10 +239,19 @@ function notVerifiedStudents(): Student[] {
   return notVerified;
 }
 
-function processPAForProject_(peerass: PeerAssessment, project: Row<Project>, newSheetName: string, settings: Settings, questions: string[], isFinal: boolean) {
-  let paProject:Row<PaProject> = getPaProject(peerass.id, project.data.key);
+function processPAForProject_(
+  peerass: PeerAssessment,
+  project: Row<Project>,
+  newSheetName: string,
+  settings: Settings,
+  questions: string[],
+  isFinal: boolean
+) {
+  let paProject: Row<PaProject> = getPaProject(peerass.id, project.data.key);
   if (paProject == null) {
-    Browser.msgBox("Peer assessment has not been opened for project " + project.data.name)
+    Browser.msgBox(
+      "Peer assessment has not been opened for project " + project.data.name
+    );
     return;
   }
 
@@ -238,7 +267,7 @@ function processPAForProject_(peerass: PeerAssessment, project: Row<Project>, ne
   }
 
   var debug = false;
-  var paResults = getPAresults(formId, projectkey, self, debug)
+  var paResults = getPAresults(formId, projectkey, self, debug);
 
   var students = getStudents(projectkey);
   var queLen = questions.length;
@@ -247,14 +276,23 @@ function processPAForProject_(peerass: PeerAssessment, project: Row<Project>, ne
 
   var finalSh = null;
   if (isFinal)
-    finalSh = SpreadsheetApp.getActive().getSheetByName(getFinalSheetName(peerass));
+    finalSh = SpreadsheetApp.getActive().getSheetByName(
+      getFinalSheetName(peerass)
+    );
 
   var groupGrade = getGroupGrade(peerass.id, project.data.key);
 
-  sh.appendRow(["PROJECT:", project.data.name])
-  sh.appendRow(["Group grade", groupGrade])
+  sh.appendRow(["PROJECT:", project.data.name]);
+  sh.appendRow(["Group grade", groupGrade]);
 
-  var headingArr = ["email", "proj key", "Final Grade", "Penalty", "Adj Grade", "Total PA score"];
+  var headingArr = [
+    "email",
+    "proj key",
+    "Final Grade",
+    "Penalty",
+    "Adj Grade",
+    "Total PA score",
+  ];
   for (var q = 0; q < questions.length; q++) {
     headingArr.push("Q" + (q + 1));
   }
@@ -262,17 +300,27 @@ function processPAForProject_(peerass: PeerAssessment, project: Row<Project>, ne
 
   for (var i = 0; i < students.length; i++) {
     var e = students[i].email;
-    var pen = paResults.penalty[e] ? 1 * penalty : 0
+    var pen = paResults.penalty[e] ? 1 * penalty : 0;
 
-    var gradeBefore = calculateGrade(groupGrade, Number(paResults.scores[e][0]), weight, 0);
+    var gradeBefore = calculateGrade(
+      groupGrade,
+      Number(paResults.scores[e][0]),
+      weight,
+      0
+    );
     gradeBefore = gradeBefore > 100 ? 100 : gradeBefore;
 
-    var grade = calculateGrade(groupGrade, Number(paResults.scores[e][0]), weight, pen);
+    var grade = calculateGrade(
+      groupGrade,
+      Number(paResults.scores[e][0]),
+      weight,
+      pen
+    );
     grade = grade > 100 ? 100 : grade;
 
     // ROUNDING UP
-    gradeBefore = Math.round(gradeBefore)
-    grade = Math.round(grade)
+    gradeBefore = Math.round(gradeBefore);
+    grade = Math.round(grade);
     for (var k = 0; k < paResults.scores[e].length; k++) {
       paResults.scores[e][k] = Math.round(100 * paResults.scores[e][k]) / 100;
     }
@@ -282,8 +330,15 @@ function processPAForProject_(peerass: PeerAssessment, project: Row<Project>, ne
     sh.appendRow(values);
 
     if (isFinal) {
-      Logger.log([e, grade, paResults.scores[e][0]])
-      finalSh.appendRow([e, grade, paResults.scores[e][0]])
+      Logger.log([e, grade, paResults.scores[e][0]]);
+      finalSh.appendRow([
+        projectkey,
+        students[i].lname,
+        e,
+        grade,
+        pen,
+        paResults.scores[e][0],
+      ]);
     }
   }
 }
@@ -310,44 +365,59 @@ function processPA(pa: PeerAssessment, isFinal: boolean) {
   }
 
   if (isFinal) {
-    prepareFinalSheet(pa)
+    prepareFinalSheet(pa);
   }
 
   var projectRows = getProjects();
   var questions = getQuestions();
 
   var sh = SpreadsheetApp.getActive().getSheetByName(newSheetName);
-  sp.setActiveSheet(sh)
+  sp.setActiveSheet(sh);
 
   var settings = getSettings();
-  sh.appendRow(["Peer assessment:", pa.name])
-  sh.appendRow(["PA settings:",
-    "weight", settings.weight,
-    "penalty", settings.penalty,
-    "self-assessment", settings.self,
-  ])
+  sh.appendRow(["Peer assessment:", pa.name]);
+  sh.appendRow([
+    "PA settings:",
+    "weight",
+    settings.weight,
+    "penalty",
+    settings.penalty,
+    "self-assessment",
+    settings.self,
+  ]);
 
   for (let projectRow of projectRows) {
-    processPAForProject_(pa, projectRow, newSheetName, settings, questions, isFinal)
+    processPAForProject_(
+      pa,
+      projectRow,
+      newSheetName,
+      settings,
+      questions,
+      isFinal
+    );
   }
   if (isFinal) {
     setState(pa, PaState.FINALIZED);
-    protectFinal_(pa)
+    protectFinal_(pa);
   }
 }
 
 function protectFinal_(pa: PeerAssessment) {
   var sheet = SpreadsheetApp.getActive().getSheetByName(getFinalSheetName(pa));
-  sheet.getRange(1, 1, 1, sheet.getLastColumn())
+  sheet
+    .getRange(1, 1, 1, sheet.getLastColumn())
     .setBackground("black")
     .setFontWeight("bold")
     .setFontColor("white");
 
-  var protection = sheet.protect().setDescription(
-    getFinalSheetName(pa) + " protection. Results are finalized. They cannot be edited!");
+  var protection = sheet
+    .protect()
+    .setDescription(
+      getFinalSheetName(pa) +
+        " protection. Results are finalized. They cannot be edited!"
+    );
   protection.setWarningOnly(true);
   sheet.autoResizeColumns(1, 3);
-
 }
 
 function announcePA(pa: PeerAssessment) {
@@ -359,22 +429,23 @@ function announcePA(pa: PeerAssessment) {
     var email = values[i][0];
     var grade = values[i][1];
     var pascore = values[i][2];
-    grade = Math.round(grade)
+    grade = Math.round(grade);
     pascore = Math.round(100 * pascore) / 100;
 
     if (email != "") {
       var student = students.filter(function (s) {
-        return s.email == email
+        return s.email == email;
       })[0];
 
-      if (student.verified)
-        sendEmailResults(pa, student, grade, pascore);
+      if (student.verified) sendEmailResults(pa, student, grade, pascore);
     }
   }
 }
 
 function handlePeerAss_(e, projectkey, pakey) {
-  var ss = SpreadsheetApp.getActive().getSheetByName(e.range.getSheet().getName());
+  var ss = SpreadsheetApp.getActive().getSheetByName(
+    e.range.getSheet().getName()
+  );
 
   var emailData = ss.getRange(e.range.getRow(), 2).getValue();
   var emailData = emailData.toLowerCase();
@@ -384,25 +455,28 @@ function handlePeerAss_(e, projectkey, pakey) {
     let verification = {
       email: emailData,
       // personalkey: ss.getRange(e.range.getRow(), 3).getValue()
-    }
-    sheetLog("email: " + verification.email)
+    };
+    sheetLog("email: " + verification.email);
     // sheetLog("personalkey: " + verification.personalkey)
 
-    var studentRow = getStudent(verification.email)
+    var studentRow = getStudent(verification.email);
     if (studentRow == null) {
       // TODO
       // check case personal key exists!!!
 
       sheetLog("Student not found " + verification.email);
-      GmailApp.sendEmail(verification.email, 'PA: Not registered',
-        'You have to register first to use the peer assessment. ');
+      GmailApp.sendEmail(
+        verification.email,
+        "PA: Not registered",
+        "You have to register first to use the peer assessment. "
+      );
       return;
     }
 
-    sheetLog(studentRow)
+    sheetLog(studentRow);
 
     //  var editURL = getEditResponseUrl_(e)
-    var formResponse = getFormResponse_(e)
+    var formResponse = getFormResponse_(e);
     var editURL = formResponse.getEditResponseUrl();
     sheetLog("EDITURL: " + editURL);
 
@@ -416,18 +490,24 @@ function handlePeerAss_(e, projectkey, pakey) {
     var responsesName = e.range.getSheet().getName();
 
     if (studentRow.data.projectkey != projectkey) {
-      sheetLog("Student not in project: '" + studentRow.data.projectkey + "' '" + projectkey + "'")
+      sheetLog(
+        "Student not in project: '" +
+          studentRow.data.projectkey +
+          "' '" +
+          projectkey +
+          "'"
+      );
       return;
     }
 
     var pa = getPA(pakey);
 
     if (editURL != null) {
-      sendSubmissionMail(studentRow.data, pa.name, editURL)
+      sendSubmissionMail(studentRow.data, pa.name, editURL);
     }
 
     // pa passed as an argument
-    setStudentSubmittedPA(studentRow, pakey, true)
+    setStudentSubmittedPA(studentRow, pakey, true);
 
     sheetLog("PA Submitted");
     return;
@@ -435,40 +515,55 @@ function handlePeerAss_(e, projectkey, pakey) {
 
   let verification = {
     email: emailData,
-    personalkey: ss.getRange(e.range.getRow(), 3).getValue()
-  }
-  sheetLog("email: " + verification.email)
-  sheetLog("personalkey: " + verification.personalkey)
+    personalkey: ss.getRange(e.range.getRow(), 3).getValue(),
+  };
+  sheetLog("email: " + verification.email);
+  sheetLog("personalkey: " + verification.personalkey);
 
-  var studentRow = getStudent(verification.email)
+  var studentRow = getStudent(verification.email);
   if (studentRow == null) {
     // TODO
     // check case personal key exists!!!
 
     sheetLog("Student not found " + verification.email);
-    GmailApp.sendEmail(verification.email, 'PA: email not found',
-      'Your email was not found. If you are sure you have used the correct email please contact the administrator of the system.');
+    GmailApp.sendEmail(
+      verification.email,
+      "PA: email not found",
+      "Your email was not found. If you are sure you have used the correct email please contact the administrator of the system."
+    );
     return;
   }
 
   sheetLog(studentRow);
 
   //  var editURL = getEditResponseUrl_(e)
-  var formResponse = getFormResponse_(e)
+  var formResponse = getFormResponse_(e);
   var editURL = formResponse.getEditResponseUrl();
   sheetLog("EDITURL: " + editURL);
 
   if (studentRow.data.personalkey != verification.personalkey) {
     sheetLog("Wrong key for student " + studentRow);
-    GmailApp.sendEmail(verification.email, 'PA: Wrong personal key', 'Your personal key is: ' + studentRow.data.personalkey +
-      '. Edit your response in ' + editURL);
+    GmailApp.sendEmail(
+      verification.email,
+      "PA: Wrong personal key",
+      "Your personal key is: " +
+        studentRow.data.personalkey +
+        ". Edit your response in " +
+        editURL
+    );
     return;
   }
 
   var responsesName = e.range.getSheet().getName();
 
   if (studentRow.data.projectkey != projectkey) {
-    sheetLog("Student not in project: '" + studentRow.data.projectkey + "' '" + projectkey + "'");
+    sheetLog(
+      "Student not in project: '" +
+        studentRow.data.projectkey +
+        "' '" +
+        projectkey +
+        "'"
+    );
     return;
   }
 
@@ -485,8 +580,10 @@ function handlePeerAss_(e, projectkey, pakey) {
 }
 
 function handleRegistration(e) {
-  sheetLog("Starting Registration")
-  var ss = SpreadsheetApp.getActive().getSheetByName(e.range.getSheet().getName());
+  sheetLog("Starting Registration");
+  var ss = SpreadsheetApp.getActive().getSheetByName(
+    e.range.getSheet().getName()
+  );
 
   let reg: Student;
   if (getSettings().domain) {
@@ -497,8 +594,8 @@ function handleRegistration(e) {
       projectkey: ss.getRange(e.range.getRow(), 5).getValue(),
       personalkey: generateUniqueKey(),
       verified: false,
-      submittedpa: {}
-    }
+      submittedpa: {},
+    };
   } else {
     reg = {
       fname: ss.getRange(e.range.getRow(), 2).getValue(),
@@ -507,8 +604,8 @@ function handleRegistration(e) {
       projectkey: ss.getRange(e.range.getRow(), 5).getValue(),
       personalkey: generateUniqueKey(),
       verified: false,
-      submittedpa: {}
-    }
+      submittedpa: {},
+    };
   }
 
   if (getStudent(reg.email) != null) {
@@ -532,36 +629,40 @@ function handleRegistration(e) {
     sendEmailForSuccess(student.data);
     Logger.log("VER: " + reg.email + " Verified");
   } else {
-    reg.email = "" + reg.email
+    reg.email = "" + reg.email;
     sendEmailForConfirmation_(reg);
 
-    addStudent(reg)
+    addStudent(reg);
     sheetLog("REG: Student " + reg.lname + " added");
   }
 }
 
-
 function handleVerification(e) {
-  sheetLog("Starting verification")
+  sheetLog("Starting verification");
 
-  var ss = SpreadsheetApp.getActive().getSheetByName(e.range.getSheet().getName());
+  var ss = SpreadsheetApp.getActive().getSheetByName(
+    e.range.getSheet().getName()
+  );
 
   var emailData = ss.getRange(e.range.getRow(), 2).getValue();
   var emailData = emailData.toLowerCase();
 
   var verification = {
     email: emailData,
-    personalkey: ss.getRange(e.range.getRow(), 3).getValue()
-  }
+    personalkey: ss.getRange(e.range.getRow(), 3).getValue(),
+  };
 
-  var student = getStudent(verification.email)
+  var student = getStudent(verification.email);
   if (student == null) {
     sheetLog("VER: Student not found " + verification.email);
-    GmailApp.sendEmail(verification.email, 'PA: this email is not registered in the system',
-      'Please use the registered email. Contact the administrator of the PA system in case you dont know how to proceed.');
+    GmailApp.sendEmail(
+      verification.email,
+      "PA: this email is not registered in the system",
+      "Please use the registered email. Contact the administrator of the PA system in case you dont know how to proceed."
+    );
     return;
   }
-  Logger.log(student)
+  Logger.log(student);
 
   if (student.data.verified) {
     sheetLog("VER: Student " + student.data.email + " already verified");
@@ -570,7 +671,11 @@ function handleVerification(e) {
 
   if (student.data.personalkey != verification.personalkey) {
     sheetLog("VER: Wrong key for student " + student);
-    GmailApp.sendEmail(verification.email, 'Wrong personal key', 'Please check your registration email');
+    GmailApp.sendEmail(
+      verification.email,
+      "Wrong personal key",
+      "Please check your registration email"
+    );
     return;
   }
   setStudentVerified(student, true);
@@ -582,10 +687,10 @@ function handleVerification(e) {
 
 function isEmptyResponses_(e) {
   Logger.log(e.values);
-  for (var i = 1; i < e.values.length; i++) { // first is timestamp
+  for (var i = 1; i < e.values.length; i++) {
+    // first is timestamp
     Logger.log(e.values[i]);
-    if (e.values[i] != "")
-      return false;
+    if (e.values[i] != "") return false;
   }
   return true;
 }
@@ -597,14 +702,14 @@ function isEmptyResponses_(e) {
 function onFormSubmit(e) {
   var responsesName = e.range.getSheet().getName();
 
-  var formId = getFormFromSubmissionEvent(e).getId()
+  var formId = getFormFromSubmissionEvent(e).getId();
 
   logAllResponses_(e);
 
   // There are multiple onFormSubmit triggered calls on one form submit.
   // They have empty fields. They will not be handled
   if (isEmptyResponses_(e)) {
-    sheetLog("REJECTED: " + e.namedValues)
+    sheetLog("REJECTED: " + e.namedValues);
     return;
   }
 
@@ -614,17 +719,17 @@ function onFormSubmit(e) {
   }
 
   if (formId == getVerificationFormId()) {
-    handleVerification(e)
+    handleVerification(e);
     return;
   }
 
   var projectkey = getProjectkeyFromFormId(formId);
-  sheetLog("Project key: " + projectkey)
+  sheetLog("Project key: " + projectkey);
   if (projectkey != null) {
-    sheetLog("PA")
+    sheetLog("PA");
 
-    var pp = getPaProjectFromFormId(formId)
-    handlePeerAss_(e, projectkey, pp.data.pakey)
+    var pp = getPaProjectFromFormId(formId);
+    handlePeerAss_(e, projectkey, pp.data.pakey);
     return;
   }
 

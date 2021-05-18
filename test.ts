@@ -49,7 +49,7 @@ function gastTestRunner() {
   testGetQuestions();
   testGetSettings();
   testGetLinks();
-  test.finish();
+  // test.finish();
 }
 
 let testStudents: Student[] = [

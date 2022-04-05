@@ -9,22 +9,19 @@
  *
  * The lines are commented to allow menu installation easily for users.
  */
-// if ((typeof GasTap) === 'undefined') { // GasT Initialization. (only if not initialized yet.)
-//   let cs = CacheService.getScriptCache().get('gast');
-//   if (!cs) {
-//     cs = UrlFetchApp.fetch('https://raw.githubusercontent.com/zixia/gast/master/src/gas-tap-lib.js').getContentText();
-//     CacheService.getScriptCache().put('gast', cs, 21600);
-//   }
-//   eval(cs);
+//  if ((typeof GasTap)==='undefined') { // GasT Initialization. (only if not initialized yet.)
+//   eval(UrlFetchApp.fetch('https://raw.githubusercontent.com/huan/gast/master/src/gas-tap-lib.js').getContentText())
 // } // Class GasTap is ready for use now!
 
-// let test = new GasTap();
+// var test = new GasTap()
 
 /**
  * IMPORTANT:
  *
  * SET TO TRUE for executing e2e tests
  * REMEMBER to reset to false afterwards!!
+ * 
+ * In test mode the app send MOCK emails instead of using the GmailApp
  */
 let testMode: boolean = false;
 /**
@@ -45,10 +42,12 @@ function gastTestRunner() {
   testNotVerifiedStudents();
   testFillWithUnderScore();
   testState();
-  testGetPaProjects();
+  
+  // testGetPaProjects();
+  testOpenPA();
+
   testGetQuestions();
   testGetSettings();
-  testGetLinks();
   // test.finish();
 }
 
@@ -280,18 +279,11 @@ function testGetSettings() {
     t.equal(settings.timeunit, 'hour');
     t.equal(settings.mailpa, true);
     t.equal(settings.mailgrade, true);
-    t.equal(settings.domain, false);
+    t.equal(settings.domain, true);
   });
 }
 
-function testGetLinks() {
-  let links = getLinks();
-  test('getLinks', function (t) {
-    t.ok(links.Registration);
-    t.ok(links.Verification);
-  });
-}
-}
+
 
 /**
  * e2e test

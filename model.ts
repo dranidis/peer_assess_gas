@@ -411,8 +411,10 @@ function deletePALinks() {
   var c2 = getSheetColumn_(PA_PROJECTS, "formURL");
   var numRows = sp.getLastRow() - 1;
 
-  sp.getRange(2, c1, numRows).clearContent();
-  sp.getRange(2, c2, numRows).clearContent();
+  if (numRows > 0) {
+    sp.getRange(2, c1, numRows).clearContent();
+    sp.getRange(2, c2, numRows).clearContent();
+  }
 }
 
 function getSheetColumn_(sheet: Sheet, colName: string): number {

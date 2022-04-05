@@ -9,11 +9,11 @@
  *
  * The lines are commented to allow menu installation easily for users.
  */
-//  if ((typeof GasTap)==='undefined') { // GasT Initialization. (only if not initialized yet.)
-//   eval(UrlFetchApp.fetch('https://raw.githubusercontent.com/huan/gast/master/src/gas-tap-lib.js').getContentText())
-// } // Class GasTap is ready for use now!
+ if ((typeof GasTap)==='undefined') { // GasT Initialization. (only if not initialized yet.)
+  eval(UrlFetchApp.fetch('https://raw.githubusercontent.com/huan/gast/master/src/gas-tap-lib.js').getContentText())
+} // Class GasTap is ready for use now!
 
-// var test = new GasTap()
+var test = new GasTap();
 
 /**
  * IMPORTANT:
@@ -24,6 +24,7 @@
  * In test mode the app send MOCK emails instead of using the GmailApp
  */
 let testMode: boolean = false;
+
 /**
  *
  *
@@ -32,6 +33,10 @@ let testMode: boolean = false;
 
 
 function gastTestRunner() {
+  testMode = true;
+
+  deleteAllTriggers();
+
   testgetProjects();
   testGetGroup();
   testIsProjectkey();
@@ -49,6 +54,8 @@ function gastTestRunner() {
   testGetQuestions();
   testGetSettings();
   // test.finish();
+
+  testMode = false;
 }
 
 let testStudents: Student[] = [
@@ -198,7 +205,6 @@ function testGetStudent() {
 
   test('getStudent', function (t) {
     let act = getStudent(testStudents[2].email);
-    Logger.log(act);
     t.equal(act.data.email, testStudents[2].email, 'getStudent');
   });
 
@@ -315,6 +321,6 @@ function testGetPaProjects() {
     t.equal(paProjects[0].data.pakey, getPAs()[0].id, 'pa key is correct');
     t.equal(paProjects[0].data.projectkey, testProjects[0].key, 'project key is correct');
     t.ok(paProjects[0].data.formId, 'there is a form id');
-  }
+  })
 
 }

@@ -160,6 +160,14 @@ function deletePATriggers() {
   }
 }
 
+
+function deleteAllTriggers() {
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+      ScriptApp.deleteTrigger(triggers[i]);
+  }
+}
+
 function sendEmailClosedToInstructor_(pa: PeerAssessment) {
   var email = Session.getActiveUser().getEmail();
   var url = SpreadsheetApp.getActive().getUrl();
@@ -167,7 +175,9 @@ function sendEmailClosedToInstructor_(pa: PeerAssessment) {
     Logger.log("FAILED TO GET " + Session.getActiveUser().getEmail());
     return;
   }
-  GmailApp.sendEmail(email, `PA: Assessment  ${pa.name}  has closed.`, url);
+   sendEmailWrapper(email, 
+    `PA: Assessment  ${pa.name}  has closed.`, 
+    url);
 }
 
 function sendReminderToNonSubmissions(pa: PeerAssessment) {
@@ -465,7 +475,7 @@ function handlePeerAss_(e, projectkey, pakey) {
       // check case personal key exists!!!
 
       sheetLog("Student not found " + verification.email);
-      GmailApp.sendEmail(
+       sendEmailWrapper(
         verification.email,
         "PA: Not registered",
         "You have to register first to use the peer assessment. "
@@ -482,7 +492,7 @@ function handlePeerAss_(e, projectkey, pakey) {
 
     // if (student.data.personalkey != verification.personalkey) {
     //   sheetLog("Wrong key for student " + student);
-    //   GmailApp.sendEmail(verification.email, 'PA: Wrong personal key', 'Your personal key is: ' + student.data.personalkey +
+    //    sendEmailWrapper(verification.email, 'PA: Wrong personal key', 'Your personal key is: ' + student.data.personalkey +
     //     '. Edit your response in ' + editURL);
     //   return;
     // }
@@ -526,7 +536,7 @@ function handlePeerAss_(e, projectkey, pakey) {
     // check case personal key exists!!!
 
     sheetLog("Student not found " + verification.email);
-    GmailApp.sendEmail(
+     sendEmailWrapper(
       verification.email,
       "PA: email not found",
       "Your email was not found. If you are sure you have used the correct email please contact the administrator of the system."
@@ -543,7 +553,7 @@ function handlePeerAss_(e, projectkey, pakey) {
 
   if (studentRow.data.personalkey != verification.personalkey) {
     sheetLog("Wrong key for student " + studentRow);
-    GmailApp.sendEmail(
+     sendEmailWrapper(
       verification.email,
       "PA: Wrong personal key",
       "Your personal key is: " +
@@ -655,7 +665,7 @@ function handleVerification(e) {
   var student = getStudent(verification.email);
   if (student == null) {
     sheetLog("VER: Student not found " + verification.email);
-    GmailApp.sendEmail(
+     sendEmailWrapper(
       verification.email,
       "PA: this email is not registered in the system",
       "Please use the registered email. Contact the administrator of the PA system in case you dont know how to proceed."
@@ -671,7 +681,7 @@ function handleVerification(e) {
 
   if (student.data.personalkey != verification.personalkey) {
     sheetLog("VER: Wrong key for student " + student);
-    GmailApp.sendEmail(
+     sendEmailWrapper(
       verification.email,
       "Wrong personal key",
       "Please check your registration email"

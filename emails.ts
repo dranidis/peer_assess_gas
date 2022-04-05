@@ -62,7 +62,7 @@ function sendReminderPA_(pa: PeerAssessment, student: Student) {
   var sp = SpreadsheetApp.getActive();
   var deadline = new Date(pa.deadline);
 
-  let pp =  getPaProject(pa.id, student.projectkey);
+  let pp = getPaProject(pa.id, student.projectkey);
   if (pp == null) {
     sheetLog(`sendReminderPA_: No PA project row found for ${pa.id} and ${student.projectkey}.`);
     return;
@@ -131,13 +131,21 @@ function sendEmailWrapper(
   recipient: string,
   subject: string,
   body: string,
-  options: GoogleAppsScript.Gmail.GmailAdvancedOptions) {
+  options?: GoogleAppsScript.Gmail.GmailAdvancedOptions) {
 
   if (testMode) {
-    sheetLog('MOCKING REMINDER EMAIL SENT');
-    sheetLog(options.htmlBody);
+    Logger.log("TEST MODE ON; Mocking emails");
+    sheetLog('MOCKING EMAIL SENT (with options)');
+    sheetLog("TO: " + recipient + "\nSUBJECT: " + subject + "\nBODY: " + body + "\nOPTIONS: " + JSON.stringify(options));
     return;
   }
 
-  GmailApp.sendEmail(recipient, subject, body, options);
-};
+  if (typeof options !== 'undefined') {
+    GmailApp.sendEmail(recipient, subject, body, options);
+  } else {
+    GmailApp.sendEmail(recipient, subject, body);
+  }
+}
+
+
+

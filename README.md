@@ -16,14 +16,11 @@ Time to complete: 5-15 minutes.
 
 1. Create a new Google spreadsheet and 
 
-    * click **Tools-> Script** editor. 
+    * click **Extensions -> Apps Script**. 
 
-    * On the script editor window that appeared, click **File -> Project properties**. 
-    * Enter a name for the script and click OK. 
+    * On the script editor window that appeared, click on the left of the page on **Project Settings**. 
     
-    * A window Project properties appears. Select and copy (Ctrl-C) the Script ID and click Save.
-
-    * Close the script editor window.
+    * Copy the Script ID.
 
 1. Clone the script project in a local folder.
     ```

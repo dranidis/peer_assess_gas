@@ -1,0 +1,26 @@
+{
+  "name": "peer_assess_gas",
+  "version": "1.0.0",
+  "description": "A peer assessment tool written in Google App Script. The aim of the tool is to allows differentiation of student's grages in a group assigment.  The script uses the WebPA algorithm for adjusting the group grade to individual student grades depending on their assessment of their peers in a provided set of questions.",
+  "main": "properties.js",
+  "directories": {
+    "doc": "doc"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/google-apps-script": "^1.0.10"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dranidis/peer_assess_gas.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dranidis/peer_assess_gas/issues"
+  },
+  "homepage": "https://github.com/dranidis/peer_assess_gas#readme"
+}

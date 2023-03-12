@@ -17,6 +17,14 @@ function onOpen(e) {
     run as doc-script
   */
   addMenu();
+
+  if (!checkInstalled()) {
+    Browser.msgBox('PA will now install all necessary sheets. Click OK and wait until'
+    + ' you see the message "Installation is complete."\n'
+    + ' If the message does not appear (this could be due to time-out) reload the page.');
+    installSheetsItem();
+  }
+
 }
 
 /**
@@ -29,7 +37,7 @@ function onInstall(e) {
   onOpen(e);
 }
 
-function createSheet_(sheetModel) {
+function createSheet_(sheetModel: Sheet) {
   var ss = SpreadsheetApp.getActive();
   var sheet = ss.getSheetByName(sheetModel.sheet);
 
@@ -63,9 +71,7 @@ function createSheet_(sheetModel) {
 function install() {
   var ss = SpreadsheetApp.getActive();
 
-  for (var s = 0; s < SHEETS.length; s++) {
-    createSheet_(SHEETS[s]);
-  }
+  SHEETS.forEach(createSheet_);
 
   installSettings();
   installQuestions();
@@ -76,6 +82,8 @@ function install() {
 }
 
 function installForms() {
+  installFormSubmitTrigger(); // not on addon
+
   Logger.log("Curent registration form Id: " + getRegistrationFormId());
 
   var regForm = getRegistrationFormId();
@@ -84,7 +92,7 @@ function installForms() {
     var projects = getProjects();
     if (projects.length == 0) {
       Browser.msgBox('You have to enter the project first in the "PROJECTS" sheet!\n');
-      return;    
+      return;
     }
     installRegistrationForm();
   } else {
@@ -100,7 +108,6 @@ function installForms() {
     return;
   }
 
-  installFormSubmitTrigger(); // not on addon
 }
 
 function addFormulas_() {
@@ -123,4 +130,3 @@ function installFormSubmitTrigger() {
   ScriptApp.newTrigger('onFormSubmit').forSpreadsheet(ss).onFormSubmit()
     .create();
 }
-

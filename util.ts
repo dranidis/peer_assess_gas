@@ -8,24 +8,24 @@ function getFormFromSubmissionEvent(e) {
 }
 
 function getFormResponse_(e) {
-  var googleForm = getFormFromSubmissionEvent(e);
-  
+  let googleForm = getFormFromSubmissionEvent(e);
+
   // Get the form response based on the timestamp
-  var timestamp = new Date(e.namedValues.Timestamp[0]);
-  var formResponse = googleForm.getResponses(timestamp).pop();
-  
+  let timestamp = new Date(e.namedValues.Timestamp[0]);
+  let formResponse = googleForm.getResponses(timestamp).pop();
+
   if (formResponse == null ) {
     sheetLog("getEditResponseUrl_(e): Main method to get formResponse failed");
 //    happens sometimes. Timestamp from namedValues is a bit later than the timestamp in the sheet
     // probably due to lack of milliseconds in sheet
-    var sheet = SpreadsheetApp.getActive().getSheetByName(e.range.getSheet().getName())
-    var row = e.range.getRow()
-    var timestamp = sheet.getRange(row, 1).getValue();
-    var formResponse = googleForm.getResponses(timestamp).pop();
-    if (formResponse == null) 
+    let sheet = SpreadsheetApp.getActive().getSheetByName(e.range.getSheet().getName())
+    let row = e.range.getRow()
+    let timestamp = sheet.getRange(row, 1).getValue();
+    let formResponse = googleForm.getResponses(timestamp).pop();
+    if (formResponse == null)
       return null;
-    
-    // make sure the email in the sheet is the same with the enamedvalues 
+
+    // make sure the email in the sheet is the same with the enamedvalues
     // to avoid sending the form to another user
     if (e.namedValues.email != sheet.getRange(row, 2).getValue())
         return formResponse;
@@ -36,9 +36,9 @@ function getFormResponse_(e) {
 function getFormResponseSheet_(formId) {
   const sheets = SpreadsheetApp.getActive().getSheets().filter(
     function (sheet) {
-      var url = sheet.getFormUrl()
+      let url = sheet.getFormUrl()
       if (url != null) {
-        var form = FormApp.openByUrl(url)
+        let form = FormApp.openByUrl(url)
         return form.getId() === formId;
       }
       return false;
@@ -47,13 +47,13 @@ function getFormResponseSheet_(formId) {
 }
 
 
-function generateRandomKey() {
-  var length = 5;
-  var text = "";
-  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+function generateRandomKey(): string {
+  let length = 5;
+  let text = "";
+  let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
   text = ""; //Reset text to empty string
-  for(var i=0;i<length;i++){
+  for(let i=0;i<length;i++){
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
   Logger.log(text);
@@ -61,12 +61,11 @@ function generateRandomKey() {
 }
 
 /**
-
-generates a unique key for student personal key
-
-*/
-function generateUniqueKey() {
-  var key = generateRandomKey();
+ * Generates a unique alphanumeric key for student personal key
+ * with length 5
+ */
+function generateUniqueKey(): string {
+  let key = generateRandomKey();
   while(isProjectkey(key)) {
     key = generateRandomKey();
   }
@@ -74,22 +73,30 @@ function generateUniqueKey() {
 }
 
 function deleteAllSheetsWithForms() {
-  var sheets = SpreadsheetApp.getActive().getSheets();
-  for(var sh = 0; sh < sheets.length; sh++) {
-    var url = sheets[sh].getFormUrl()
+  let sheets = SpreadsheetApp.getActive().getSheets();
+  for(let sh = 0; sh < sheets.length; sh++) {
+    let url = sheets[sh].getFormUrl()
     if (url != null) {
-      var form = FormApp.openByUrl(url);
+      let form = FormApp.openByUrl(url);
       Logger.log("Sheet %s URL %s", sheets[sh].getName(), form.getId());
       form.removeDestination();
       SpreadsheetApp.getActive().deleteSheet(sheets[sh]);
       DriveApp.getFileById(form.getId()).setTrashed(true);
-    }    
+    }
   }
 }
-
-function fillWithUnderScore(str, len) {
-  var strLen = str.length;
-  for(var i = 0; i < len - strLen; i++) {
+/**
+ * Returns a string of lenght len containing the initial str argument
+ * and the rest of the string filled with _.
+ * If the lenght is less than the length of the original,
+ * returns the original string.
+ *
+ * @param str original string
+ * @param len lenght of returned string
+ */
+function fillWithUnderScore(str: string, len: number): string {
+  let strLen = str.length;
+  for(let i = 0; i < len - strLen; i++) {
     str += "_";
   }
   return str;

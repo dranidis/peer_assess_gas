@@ -625,8 +625,8 @@ function installSettings() {
     ],
     ["PA Reminder2 Send email X timeunits before the deadline", "reminder2", 6],
     ["Time unit for reminders (min/hour/day)", "timeunit", "hour"],
-    ["Announce PA-score", "mailpa", true],
-    ["Announce final grade", "mailgrade", true],
+    ["Announce PA-score", "mailpa", false],
+    ["Announce final grade", "mailgrade", false],
     [
       "Google Domain emails (do not need verifications and keys)",
       "domain",

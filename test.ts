@@ -9,18 +9,18 @@
  *
  * The lines are commented to allow menu installation easily for users.
  */
- if ((typeof GasTap)==='undefined') { // GasT Initialization. (only if not initialized yet.)
-  eval(UrlFetchApp.fetch('https://raw.githubusercontent.com/huan/gast/master/src/gas-tap-lib.js').getContentText())
-} // Class GasTap is ready for use now!
+//  if ((typeof GasTap)==='undefined') { // GasT Initialization. (only if not initialized yet.)
+//   eval(UrlFetchApp.fetch('https://raw.githubusercontent.com/huan/gast/master/src/gas-tap-lib.js').getContentText())
+// } // Class GasTap is ready for use now!
 
-var test = new GasTap();
+// var test = new GasTap();
 
 /**
  * IMPORTANT:
  *
  * SET TO TRUE for executing e2e tests
  * REMEMBER to reset to false afterwards!!
- * 
+ *
  * In test mode the app send MOCK emails instead of using the GmailApp
  */
 let testMode: boolean = false;
@@ -47,7 +47,7 @@ function gastTestRunner() {
   testNotVerifiedStudents();
   testFillWithUnderScore();
   testState();
-  
+
   // testGetPaProjects();
   testOpenPA();
 

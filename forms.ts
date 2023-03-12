@@ -86,7 +86,7 @@ function installRegistrationForm() {
         .setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId())
         .setAllowResponseEdits(true)
         .setLimitOneResponsePerUser(true)
-        .setConfirmationMessage('Check your email in order to verify your registration!')
+        .setConfirmationMessage('Check your email for your registration!')
 
 
     form.addTextItem().setTitle('First name').setRequired(true);

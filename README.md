@@ -14,19 +14,7 @@ The script utilizes:
 
 Time to complete: 5-15 minutes.
 
-<<<<<<< HEAD
-1. Create a new Google spreadsheet and 
-
-    * click **Extensions -> Apps Script**. 
-
-    * On the script editor window that appeared, click on the left of the page on **Project Settings**. 
-    
-    * Copy the Script ID.
-
-1. Clone the script project in a local folder.
-=======
 1. Clone the script project in a local folder. (Alternatively download the zip file and uncompress it)
->>>>>>> feature/type-script
     ```
     git clone https://github.com/dranidis/peer_assess_gas.git
     ```

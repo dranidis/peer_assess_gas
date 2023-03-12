@@ -1,3 +1,5 @@
 .clasp.json
 .log
 node_modules/
+
+*.txt

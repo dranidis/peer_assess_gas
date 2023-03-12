@@ -1,0 +1,6 @@
+enum PaState {
+  INACTIVE = 'INACTIVE',
+  OPEN = 'OPEN',
+  CLOSED = 'CLOSED',
+  FINALIZED = 'FINALIZED'
+}

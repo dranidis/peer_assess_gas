@@ -14,23 +14,20 @@ The script utilizes:
 
 Time to complete: 5-15 minutes.
 
-1. Create a new Google spreadsheet and 
-
-    * click **Tools-> Script** editor. 
-
-    * On the script editor window that appeared, click **File -> Project properties**. 
-    * Enter a name for the script and click OK. 
-    
-    * A window Project properties appears. Select and copy (Ctrl-C) the Script ID and click Save.
-
-    * Close the script editor window.
-
-1. Clone the script project in a local folder.
+1. Clone the script project in a local folder. (Alternatively download the zip file and uncompress it)
     ```
     git clone https://github.com/dranidis/peer_assess_gas.git
     ```
 
-1. Locally, inside the directory where you have the script project, create a **.clasp.json** file with the following content. 
+1. Create a new Google spreadsheet and 
+
+    * Select **Extensions-> Apps Script**. 
+
+    * On the Apps Script window that appears, hover on the settings wheel at the left toolbar and select **Project settings**. 
+    
+    * Copy the Script ID.
+
+1. Locally, inside the directory where you have the script project, create a **.clasp.json** file with the following content:
 
     ```
     {"scriptId":"xxxxxxxxxxxxxxxx"}
@@ -38,12 +35,11 @@ Time to complete: 5-15 minutes.
 
     In the place of the x's paste the new Script ID and save the file as **.clasp.json**.
 
-1. Execute:
+1. In a terminal execute:
 
     ```
     clasp login
     ```
-
 
     A window will appear in the browser: Choose a google account to continue to clasp.
 Choose the account and click "Allow". Then "Logged in! You may close this page." will appear. Close the browser window.
@@ -74,31 +70,45 @@ Click on Off and enable it to On. (This might already be enabled if you used scr
     If the message "Installation is complete" does not appear, refresh the Google spreadsheet page and click OK for the above installation procedure to repeat. *(Google scripts have a timeout of about 30 seconds. Reloading the page will allow the installation to continue and complete)*.
 
 
-## QUICKSTART FOR PEER ASSESSMENT
+## Quickstart for peer assessment 
+### Student registration with Domain emails
 
-1. Go to the **Settings** spreadsheet and set the **Google Domain emails** setting.
-
-    * If students are going to use google domain emails leave the value to TRUE.
-
-    * If students are going to use emails outside a google domain set the value to FALSE.
+1. Go to the **Projects** spreadsheet and enter projects information. Enter one row  per team: the team's name and a unique key (e.g. `Student project` and `p1`).
 
 2. Select **PA -> Install -> Install Registration & Verification form** 
 
-3. Go to the **Projects** spreadsheet and enter projects information. Enter one row  per team: the team's name and a unique key (see help).
-4. Enter students (see help).
-5. Enter the questions for the peer assessment (see help).
+4. Select **PA -> Links -> Registration URL** and copy the URL. 
 
-If not-domain emails are used:
-    Click PA -> e-Mails -> Send emails to those who did not verify the account
-    Students will receive an email and they will have to verify their accounts.
+5. Send the URL to students so that they register for peer assessment.
 
-In the settings set the email reminders before the deadline.
+### Peer assessment
 
-Create the peer assessment (see help) and PA -> Open.
-and send email to those who did not fill it (see help).
+Once all students registered (check **Students** spreadsheet) you can initiate the peer assessment:
 
-The peer asssessment will close automatically. At any time you can click PA -> Calculate to see the peer assessment results.
+1. Examine and change (edit, delete, add more) the questions for the peer assessment (in the **Questions** spreadsheet).
 
-More info can be found in the help file: **PA -> Help**.      
+2. Create a row int the **Peer Assessments** spreadsheet, e.g. Name: 'Iteration 1', Key: iter1, DEADLINE: 2023-03-12 (see help for more information) 
 
-* At some point, a browser window may appear **Authorization Required**. Click **Continue**. Choose your account and click **Allow**. 
+3. Select **PA -> Peer Assessments -> Open**. Students will receive an email with the link to the peer assessment form. 
+
+You can check who filled the peer assessment by checking int the **Students** spreadsheet the column with the peer assessment key.
+
+The system will send some reminders as specified in the **Settings** spreadsheet. Extra reminders can be sent by selecting **PA -> emails -> Send reminder to those who did not submit the peer assessment**
+
+The peer asssessment will close automatically. 
+
+### Calculating grades
+
+1. Open the **PAs Projects** spreadsheet and enter the group grade.
+
+2. Select **PA -> Peer Assessments -> Calculate** to see the peer assessment results.
+
+## Help
+More info about using the Peer Assessment can be found in the help file: **PA -> Help**.     
+
+
+## Note
+
+For groups of 2 students you need to set the setting **PA self-assessment calculated** to true in order to get differentiated results.
+
+

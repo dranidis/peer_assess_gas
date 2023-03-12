@@ -1,18 +1,18 @@
 function addMenu() {
-  var ui = SpreadsheetApp.getUi();
+  let ui = SpreadsheetApp.getUi();
   // Or DocumentApp or FormApp.
   ui.createMenu('PA')
     .addSubMenu(ui.createMenu('Peer assessments')
       .addItem('Open', 'openPAitem')
       .addItem('Update deadlines', 'updateDeadlineMenuItem')
-      .addItem('eMail reminder to those who did not submit', 'menuItem2')
       .addItem('Calculate', 'calculateItem')
       .addItem('Finalize', 'finalizeItem')
-      .addItem('eMail results', 'announceItem')
     )
     .addSeparator()
     .addSubMenu(ui.createMenu('e-Mails')
       .addItem('Send reminder to those who did not verify the account', 'menuItem3')
+      .addItem('Send reminder to those who did not submit the peer assessment', 'menuItem2')
+      .addItem('Send final peer assessment results', 'announceItem')
     )
     .addSubMenu(ui.createMenu('Links')
       .addItem('Registration URL', 'showRegItem')
@@ -23,26 +23,19 @@ function addMenu() {
     )
     .addItem('Help', 'showSidebar')
     .addToUi();
-
-    if (!checkInstalled()) {
-      Browser.msgBox('PA will now install all necessary sheets. Click OK and wait until'
-      + ' you see the message "Installation is complete."\n'
-      + ' If the message does not appear (this could be due to time-out) reload the page.');
-      installSheetsItem();
-    }
 }
 
-function getPAselected(pas) {
-  var activeSheet = SpreadsheetApp.getActiveSheet();
+function getPAselected(pas: PeerAssessment[]): PeerAssessment {
+  let activeSheet = SpreadsheetApp.getActiveSheet();
 
-  var selection = activeSheet.getSelection();
+  let selection = activeSheet.getSelection();
 
   if (selection.getActiveSheet().getName() != PAS.sheet) {
     Browser.msgBox('Please click on a row with a peer assessment in the ' + PAS.sheet + ' sheet.');
     return;
   }
-  var row = selection.getCurrentCell().getRow();
-  var index = row - 2
+  let row = selection.getCurrentCell().getRow();
+  let index = row - 2
   if (index < 0 || index >= pas.length) {
     Browser.msgBox('Please click on a row with a peer assessment.');
     return null
@@ -53,7 +46,7 @@ function getPAselected(pas) {
 }
 
 function checkInstalled() {
-  var logSheet = SpreadsheetApp.getActive().getSheetByName(LOG.sheet);
+  let logSheet = SpreadsheetApp.getActive().getSheetByName(LOG.sheet);
   if (logSheet) {
     return logSheet.getRange(1, 1).getValue() === 'INSTALLED';
   }
@@ -72,15 +65,15 @@ function installFormsItem() {
 }
 
 function openPAitem() {
-  var pas = getPAs();
-  var pa;
+  let pas = getPAs();
+  let pa;
   if (pas.length == 1)
     pa = pas[0];
   else
     pa = getPAselected(pas);
 
   //  if (pa.open) {
-  if (pa.state != state.INACTIVE && pa.state != "") {
+  if (pa.state != PaState.INACTIVE && pa.state != "") {
     Browser.msgBox('The peer assessment ' + pa.name + " has already been opened.");
     return;
   }
@@ -118,7 +111,7 @@ function updateDeadlineMenuItem() {
   if (pa == null)
     return;
 
-  if (pa.state != state.OPEN && pa.state != state.CLOSED) {
+  if (pa.state != PaState.OPEN && pa.state != PaState.CLOSED) {
     SpreadsheetApp.getActiveSpreadsheet().toast('The peer assessment ' + pa.name + "'s deadline cannot get updated." +
       "\nFinished or inactive projects cannot change.");
     return;
@@ -129,15 +122,15 @@ function updateDeadlineMenuItem() {
     return;
   }
 
-  setNewDeadline(pa, pa.deadline);
+  setNewDeadline(pa);
 
   SpreadsheetApp.getActiveSpreadsheet().toast("Deadline of " + pa.name + " changed to " + pa.deadline);
 }
 
 
 function calculateItem() {
-  var pas = getPAs();
-  var pa;
+  let pas = getPAs();
+  let pa;
   if (pas.length == 1)
     pa = pas[0];
   else
@@ -145,11 +138,11 @@ function calculateItem() {
   if (pa == null)
     return;
 
-  if (pa.state == state.FINALIZED) {
+  if (pa.state == PaState.FINALIZED) {
     Browser.msgBox('The results for ' + pa.name + " are already announced.");
     return;
   }
-  if (pa.state != state.OPEN && pa.state != state.CLOSED && pa.state != state.FINALIZED) {
+  if (pa.state != PaState.OPEN && pa.state != PaState.CLOSED && pa.state != PaState.FINALIZED) {
     Browser.msgBox('There are no results for ' + pa.name + ".");
     return;
   }
@@ -157,8 +150,8 @@ function calculateItem() {
 }
 
 function finalizeItem() {
-  var pas = getPAs();
-  var pa;
+  let pas = getPAs();
+  let pa;
   if (pas.length == 1)
     pa = pas[0];
   else
@@ -166,7 +159,7 @@ function finalizeItem() {
   if (pa == null)
     return;
 
-  if (pa.state != state.CLOSED) {
+  if (pa.state != PaState.CLOSED) {
     Browser.msgBox('Only CLOSED assessments can be finalized. ');
     return;
   }
@@ -175,8 +168,8 @@ function finalizeItem() {
 
 
 function announceItem() {
-  var pas = getPAs();
-  var pa;
+  let pas = getPAs();
+  let pa;
   if (pas.length == 1)
     pa = pas[0];
   else
@@ -184,7 +177,7 @@ function announceItem() {
   if (pa == null)
     return;
 
-  if (pa.state != state.FINALIZED) {
+  if (pa.state != PaState.FINALIZED) {
     Browser.msgBox('Only FINALIZED results can be sent to students. ');
     return;
   }
@@ -192,7 +185,7 @@ function announceItem() {
 }
 
 function showRegItem() {
-  var registrationFormId = getRegistrationFormId();
+  let registrationFormId = getRegistrationFormId();
   if (registrationFormId != null)
     Browser.msgBox(FormApp.openById(getRegistrationFormId()).getPublishedUrl());
   else
@@ -200,8 +193,8 @@ function showRegItem() {
 }
 
 function menuItem2() {
-  var pas = getPAs();
-  var pa;
+  let pas = getPAs();
+  let pa;
   if (pas.length == 1)
     pa = pas[0];
   else
@@ -209,7 +202,7 @@ function menuItem2() {
   if (pa == null)
     return;
 
-  if (pa.state != state.OPEN) {
+  if (pa.state != PaState.OPEN) {
     Browser.msgBox('The assessment ' + pa.name + " is not OPEN. ");
     return;
   }
@@ -224,10 +217,10 @@ function menuItem3() {
 
 function showSidebar() {
   //  var html = HtmlService.createHtmlOutputFromFile('html/help.html')
-  var template = HtmlService.createTemplateFromFile('html/help.html');
+  let template = HtmlService.createTemplateFromFile('html/help.html');
   template.grades = PA_PROJECTS.sheet
   template.pa = PAS.sheet
-  var html = template.evaluate()
+  let html = template.evaluate()
     .setTitle('Help')
     .setWidth(500);
 
@@ -243,18 +236,18 @@ onEdit
 
 */
 function onEdit(e) {
-  var range = e.range;
-  shName = range.getSheet().getName();
-  row = range.getRow();
-  col = range.getColumn();
-  value = range.getValue();
+  let range = e.range;
+  let shName = range.getSheet().getName();
+  let row = range.getRow();
+  let col = range.getColumn();
+  let value = range.getValue();
 
   Logger.log("EDITED " + shName + ":" + row + "," + col)
 
   if (shName == PAS.sheet) {
-    var deadlineCol = 3;
+    let deadlineCol = 3;
     if (col == deadlineCol) {
-      var pa = readPA(row);
+      let pa = readPA(row);
       if (pa == null)
         return;
 
@@ -263,7 +256,7 @@ function onEdit(e) {
         Browser.msgBox("Deadline of " + pa.name + " is in the past! ");
         return;
       }
-      if (pa.state != state.OPEN && pa.state != state.CLOSED) {
+      if (pa.state != PaState.OPEN && pa.state != PaState.CLOSED) {
         return;
       }
       Browser.msgBox("Run 'PA -> Peer Assessments -> Updates Deadlines' from the menu to update " + pa.name + "'s deadline to " + value);
@@ -272,8 +265,8 @@ function onEdit(e) {
 }
 
 function getPaIdFromUI() {
-  var ui = SpreadsheetApp.getUi();
-  var response = ui.prompt('Peer assessment id?');
+  let ui = SpreadsheetApp.getUi();
+  let response = ui.prompt('Peer assessment id?');
 
   // Process the user's response.
   if (response.getSelectedButton() == ui.Button.OK) {
@@ -285,16 +278,13 @@ function getPaIdFromUI() {
   }
 }
 
-function showAlertBeforeMail_(students) {
+function showAlertBeforeMail_(students: Student[]) {
   Logger.log("EMAIL TO " + students)
-  var ui = SpreadsheetApp.getUi(); // Same variations.
+  let ui = SpreadsheetApp.getUi(); // Same variations.
 
-  var stString = ""
-  for (var i = 0; i < students.length; i++) {
-    stString += students[i].email + "; "
-  }
+  let stString = students.map(s => s.email).join('; ');
 
-  var result = ui.alert(
+  let result = ui.alert(
     'You are going to send emails to ' + students.length + ' students.',
     stString + '\n\n' + 'Are you sure you want to continue?',
     ui.ButtonSet.YES_NO);
@@ -303,13 +293,13 @@ function showAlertBeforeMail_(students) {
   return result == ui.Button.YES
 }
 
-function showAlertBeforeOpen_(pa) {
-  var ui = SpreadsheetApp.getUi();
+function showAlertBeforeOpen_(pa: PeerAssessment) {
+  let ui = SpreadsheetApp.getUi();
 
-  var result = ui.alert(
+  let result = ui.alert(
     'Opening the peer assessment ' + pa.name,
     'The peer assessment contains ' +
-    getQuestions().length + 
+    getQuestions().length +
     ' questions. Are you sure you want to continue?',
     ui.ButtonSet.YES_NO);
 

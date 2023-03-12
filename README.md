@@ -71,15 +71,21 @@ Click on Off and enable it to On. (This might already be enabled if you used scr
 
 
 ## Quickstart for peer assessment 
-### Student registration with Domain emails
+
+### Setup
+
+#### Projects
 
 1. Go to the **Projects** spreadsheet and enter projects information. Enter one row  per team: the team's name and a unique key (e.g. `Student project` and `p1`).
 
-2. Select **PA -> Install -> Install Registration & Verification form** 
+1. Select **PA -> Install -> Install Registration & Verification form** 
 
-4. Select **PA -> Links -> Registration URL** and copy the URL. 
+#### Teams of students
 
-5. Send the URL to students so that they register for peer assessment.
+1. Select **PA -> Links -> Registration URL** and copy the URL. 
+
+1. Send the URL to students so that they register for peer assessment.
+
 
 ### Peer assessment
 

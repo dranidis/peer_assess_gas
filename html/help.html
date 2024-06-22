@@ -1,195 +1,218 @@
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <base target="_top">
     <?!= include("html/stylesheet"); ?>
-  </head>
-  <body>
+</head>
+
+<body>
 
     <h2>Adding projects (teams)</h2>
-      <p>
-      This is the first task to be completed. After deciding the number of teams, add one line per team in the
-      <b>Projects</b> sheet. The only necessary data are:
-      </p>
-      <ul>
-        <li>      the project's <b>NAME</b> (team's name) and 
+    <p>
+        This is the first task to be completed. After deciding the number of teams, add one line per team in the
+        <b>Projects</b> sheet. The only necessary data are:
+    </p>
+    <ul>
+        <li> the project's <b>NAME</b> (team's name) and
         <li> a unique <b>KEY</b> for the project. The key should contain no spaces.
-      </ul>
+    </ul>
 
     <h2>Settings - Student emails</h2>
-      <p>There are two options for students emails. </p>
-      <ul>
-        <li>The best and simplest option is that students use their <em>google domain emails</em> for interacting 
-          with the PA system. In this case the registration of the student is a one-step process, in which
-          students register with their names and project key (see below). To use this option make sure that in the <b>Settings</b> sheet
-          the <b>domain</b> is set to <b>true</b>. Then use the menu <b>PA -> Install -> Install Registration and Verification forms</b> to create
-          the forms for student's self registration.</li>
-        <li>If using google domain emails is not possible, then set the <b>domain</b> setting to <b>false</b> and then use the menu <b>PA -> Install -> Install and Verification forms</b> to create
-          the forms for student's self registration. In this case, as explained below the registration is a two-step process
-          including a verfication step after self-registration.</li>
-      </ul>
+    <p>There are two options for students emails. </p>
+    <ul>
+        <li>The best and simplest option is that students use their <em>google domain emails</em> for interacting
+            with the PA system. In this case the registration of the student is a one-step process, in which
+            students register with their names and project key (see below). To use this option make sure that in the
+            <b>Settings</b> sheet
+            the <b>domain</b> is set to <b>true</b>. Then use the menu <b>PA -> Install -> Install Registration and
+                Verification forms</b> to create
+            the forms for student's self registration.</li>
+        <li>If using google domain emails is not possible, then set the <b>domain</b> setting to <b>false</b> and then
+            use the menu <b>PA -> Install -> Install and Verification forms</b> to create
+            the forms for student's self registration. In this case, as explained below the registration is a two-step
+            process
+            including a verfication step after self-registration.</li>
+    </ul>
 
 
-      
+
     <h2>Student registration</h2>
-      <h3>Adding students manually</h3>
-        <p>
-        Students can be manually added in the <b>Students</b> sheet; add one line per student. 
-        The necessary data are: 
-        </p>
-        <ul>
-          <li>First name, 
-          <li>last name, 
-          <li>email, and
-          <li>project key (matching one of the keys in the <b>Projects</b> sheet).
-        </ul>
-        <p>
-          The rest of the columns are filled by the system.
-        </p>
-        <p>
-        If you manually add students you have to notify them that they have to verify their accounts. Use the <b>PA -> e-mails -> Send reminder to those who did not verify the account</b> menu to let the 
+    <h3>Adding students manually</h3>
+    <p>
+        Students can be manually added in the <b>Students</b> sheet; add one line per student.
+        The necessary data are:
+    </p>
+    <ul>
+        <li>First name,
+        <li>last name,
+        <li>email, and
+        <li>project key (matching one of the keys in the <b>Projects</b> sheet).
+    </ul>
+    <p>
+        The rest of the columns are filled by the system.
+    </p>
+    <p>
+        If you manually add students you have to notify them that they have to verify their accounts. Use the <b>PA ->
+            e-mails -> Send reminder to those who did not verify the account</b> menu to let the
         system send the reminder for verification.
-        </p>
-      
-      <h3>Students are added by self-registration</h3>
-        <p>
-        Get the Registration URL from the menu <b>PA -> Links -> Registration URL</b> by selecting and copying the displayed link (Ctrl-C).
+    </p>
+
+    <p>
+        For google domain emails, you could skip the verification and registration steps altogether. Just
+        enter the student data as described above and enter in
+        the column <b>VERIFIED</b> the value <b>TRUE</b> for all the students that
+        will be using their domain emails.
+    </p>
+
+    <h3>Students are added by self-registration</h3>
+    <p>
+        Get the Registration URL from the menu <b>PA -> Links -> Registration URL</b> by selecting and copying the
+        displayed link (Ctrl-C).
         Announce to the students their <b>project key</b> for their project and the <b>Registration URL</b>.
-        </p>
-        <p>
+    </p>
+    <p>
         After students fill in their details they will appear in
         the <b>Students</b> sheet.
-        </p>
-        
+    </p>
+
     <h2>Student account verification (only if not-domain emails have been used)</h2>
-        <b>This step is not necessary if domain emails have been used for the registration of students.
-          This is determined by the <em>domain</em> flag in settings.
-        </b>
-        <p>
-        All students (either added manually or via self-registration) have to verify their accounts. 
+    <b>This step is not necessary if domain emails have been used for the registration of students.
+        This is determined by the <em>domain</em> flag in settings.
+    </b>
+    <p>
+        All students (either added manually or via self-registration) have to verify their accounts.
         Verified accounts of students have TRUE in <b>VERIFIED</b> column.
-        </p>
-        <p>
-        You can use the <b>PA -> e-mails -> Send reminder to those who did not verify the account</b> menu to let the 
+    </p>
+    <p>
+        You can use the <b>PA -> e-mails -> Send reminder to those who did not verify the account</b> menu to let the
         system send the reminder for verification to all students that have not verified their accounts yet.
-        </p>
-        <p>
-        Students will receive an email with their personal key and a link to the verification form in order to complete their registration to the system.
-        </p>
-        <p>
-        <b>IMPORTANT:</b> Students who don't verify their accounts can not participate in the peer assessment, 
+    </p>
+    <p>
+        Students will receive an email with their personal key and a link to the verification form in order to complete
+        their registration to the system.
+    </p>
+    <p>
+        <b>IMPORTANT:</b> Students who don't verify their accounts can not participate in the peer assessment,
         although they will be evaluated by other students.
-        This makes sure that their email addresses are correctly entered into the system. Check with students who don't verify their account, whether 
+        This makes sure that their email addresses are correctly entered into the system. Check with students who don't
+        verify their account, whether
         their email is correct.
-        </p>
-      
+    </p>
+
     <h2>Projects sheet</h2>
-      <p>
-      In the projects sheet you can see how many students belong to each group, how many have verified their account and how many have filled their 
-      peer assessment.
-      </p>
-      
+    <p>
+        In the projects sheet you can see how many students belong to each group, how many have verified their account
+        and how many have filled their
+        peer assessment.
+    </p>
+
     <h2>Peer assessments</h2>
-    
-      <h3>Entering questions for the peer assessment</h3>
-        <p>
+
+    <h3>Entering questions for the peer assessment</h3>
+    <p>
         In the <b>Questions</b> sheet enter one row for each question of the peer assessment.
-        </p>
-        <p>
+    </p>
+    <p>
         All questions will have an answer from 1 to 5 in the form.
-        </p>
-        <p>Some sample questions are provided. Feel free to make any changes.</p>
-      
-      <h3>Entering peer assessments</h3>
-        <p>
+    </p>
+    <p>Some sample questions are provided. Feel free to make any changes.</p>
+
+    <h3>Entering peer assessments</h3>
+    <p>
         Enter in the <b>Peer Assessments</b> sheet a row for the peer assessment with the following data:
-        </p>
-        <ul>
-          <li>Name of assessment
-          <li>Unique <b>KEY</b> for the assessment
-          <li>Deadline (make sure the date is correctly entered in the format YYYY-MM-DD hh:mm).
-        </ul>
-      
-      <h3>Opening the peer assessment</h3>
-        <p>
+    </p>
+    <ul>
+        <li>Name of assessment
+        <li>Unique <b>KEY</b> for the assessment
+        <li>Deadline (make sure the date is correctly entered in the format YYYY-MM-DD hh:mm).
+    </ul>
+
+    <h3>Opening the peer assessment</h3>
+    <p>
         When you want to make the form available to students use the menu <b>PA -> Peer assessments -> Open</b>.
-        </p>
-        <p>
+    </p>
+    <p>
         (Verified) Students will receive an email with the link in order to fill the peer assessment till the deadline.
-        </p>
-        <p>
-        Two more email reminders will be sent to students. One, 3 days before, and one 1 day before the deadline. 
+    </p>
+    <p>
+        Two more email reminders will be sent to students. One, 3 days before, and one 1 day before the deadline.
         The intervals of the reminders can be fully customized in the Settings sheet.
-        </p>
-        <p>
-        The form will automatically close at the deadline, and no more responses will be permitted, unless you change the deadline.
-        </p>
-        
-      <h3>Changing the deadline of the peer assessment</h3>
-        <p>
-        You may change the date of the deadline in the <b>Peer assessments</b> sheet. 
+    </p>
+    <p>
+        The form will automatically close at the deadline, and no more responses will be permitted, unless you change
+        the deadline.
+    </p>
+
+    <h3>Changing the deadline of the peer assessment</h3>
+    <p>
+        You may change the date of the deadline in the <b>Peer assessments</b> sheet.
         You can do that either before or after the deadline has passed.
-        </p>
-        <p>
+    </p>
+    <p>
         To complete the change use the menu <b>PA -> Peer assessments -> Update deadlines</b>.
-        </p>
-        <p>
+    </p>
+    <p>
         Reminders will be sent again 3 and 1 days before the deadline.
-        </p>
-        
-      <h3>Grading groups</h3>
-        <p>
-        In the <b><?= grades ?></b> sheet there is one line per assessment and project pair.
+    </p>
+
+    <h3>Grading groups</h3>
+    <p>
+        In the <b>
+            <?= grades ?>
+        </b> sheet there is one line per assessment and project pair.
         In this sheet just enter the <b>grade</b> of the group in the specific assessment. The rest of the columns
         are already filled automatically.
         Necessary data:
-        </p>
-        <ul>
-          <li>Grade
-        </ul>
-        
-      <h3>Calculating peer assessment scores</h3>
-        <h4>Calculation</h4>
-          <p>
-          
-          </p>
-          <p>With the <b><?= pa ?></b> sheet active click on the row of one of the peer assessments. 
-          Then by using the menu 
-          <b>PA -> Peer assessments -> Calculate</b> you can have the system 
-          calculate individual scores.
-          </p>
-          <p>A new sheet will be created including the [peer assessment id]. 
-          If the sheet already exists it will get cleared before it is filled.
-          </p>
-        <h4>Peer assessment Settings</h4>
-          <p>
-          The system uses the WEBPA algorithm for the peer assessment. 
-          You can change the peer assessment calculation settings in the <b>Settings</b> sheet and perform
-          the calculation again. The parameters are:
-          </p>
-          <ul>
-            <li><b>PA Weight</b>: the percentage of the grade that is adjusted.
-            <li><b>PA penalty</b>: the percentage of final mark reduction due to non-submission of peer assessment.
-            <li><b>PA self</b>: the peer assessment gather also self-assessment responses. A setting of true takes these into account, whereas a setting of 
+    </p>
+    <ul>
+        <li>Grade
+    </ul>
+
+    <h3>Calculating peer assessment scores</h3>
+    <h4>Calculation</h4>
+    <p>
+
+    </p>
+    <p>With the <b>
+            <?= pa ?>
+        </b> sheet active click on the row of one of the peer assessments.
+        Then by using the menu
+        <b>PA -> Peer assessments -> Calculate</b> you can have the system
+        calculate individual scores.
+    </p>
+    <p>A new sheet will be created including the [peer assessment id].
+        If the sheet already exists it will get cleared before it is filled.
+    </p>
+    <h4>Peer assessment Settings</h4>
+    <p>
+        The system uses the WEBPA algorithm for the peer assessment.
+        You can change the peer assessment calculation settings in the <b>Settings</b> sheet and perform
+        the calculation again. The parameters are:
+    </p>
+    <ul>
+        <li><b>PA Weight</b>: the percentage of the grade that is adjusted.
+        <li><b>PA penalty</b>: the percentage of final mark reduction due to non-submission of peer assessment.
+        <li><b>PA self</b>: the peer assessment gather also self-assessment responses. A setting of true takes these
+            into account, whereas a setting of
             false ignores the self-assessment responses.
-          </ul>
-          
-      <h3>Finalizing assessments</h3>
-         <p>
-         If you wish to announce the results to students select from the menu <b>PA -> Peer assessments -> Finalize</b>.
-         A new sheet will be created with the name <b>Final PA</b> and the assessment's key. The sheet contains the
-         results to be announced.
-         </p>
-         <p>
-         Finalized assessments should not change.
-          </p>
-      <h3>Announcing the results via email</h3>
-        <p>
+    </ul>
+
+    <h3>Finalizing assessments</h3>
+    <p>
+        If you wish to announce the results to students select from the menu <b>PA -> Peer assessments -> Finalize</b>.
+        A new sheet will be created with the name <b>Final PA</b> and the assessment's key. The sheet contains the
+        results to be announced.
+    </p>
+    <p>
+        Finalized assessments should not change.
+    </p>
+    <h3>Announcing the results via email</h3>
+    <p>
         <b>PA -> Peer assessments -> eMail results</b> will sent emails to all verified students. The email will contain
         the PA score and the final grade of the peer assessment. You can set at the <b>Settings</b> sheet
         whether you wish one or both of them not sent.
-        </p>
-  </body>
+    </p>
+</body>
+
 </html>
-
-

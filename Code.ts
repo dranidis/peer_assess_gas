@@ -175,8 +175,8 @@ function sendEmailClosedToInstructor_(pa: PeerAssessment) {
     Logger.log("FAILED TO GET " + Session.getActiveUser().getEmail());
     return;
   }
-   sendEmailWrapper(email, 
-    `PA: Assessment  ${pa.name}  has closed.`, 
+   sendEmailWrapper(email,
+    `PA: Assessment  ${pa.name}  has closed.`,
     url);
 }
 
@@ -208,7 +208,7 @@ function getStudentsWhoDidNotSubmit(pa: PeerAssessment) {
   for (let project of projects) {
     var students = getStudents(project.data.key).filter((s) => {
       if (isDomain) {
-        return !s.submittedpa[pa.id];
+        return s.verified && !s.submittedpa[pa.id]; // don't send to unverified even in the case of domain users; they did not do the registration
       }
       return s.verified && !s.submittedpa[pa.id];
     });

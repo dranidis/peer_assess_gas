@@ -1,44 +1,65 @@
-function include(filename) {
-  return HtmlService.createHtmlOutputFromFile(filename)
-      .getContent();
+function include(filename: string) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
-function getFormFromSubmissionEvent(e) {
-  return FormApp.openByUrl(e.range.getSheet().getFormUrl());
+function getFormFromSubmissionEvent(
+  e: GoogleAppsScript.Events.SheetsOnFormSubmit,
+): GoogleAppsScript.Forms.Form | null {
+  const formUrl = e.range.getSheet().getFormUrl();
+  if (formUrl == null) {
+    sheetLog(
+      "getFormFromSubmissionEvent(e): No form URL found for sheet: " +
+        e.range.getSheet().getName(),
+    );
+    return null;
+  }
+  return FormApp.openByUrl(formUrl);
 }
 
-function getFormResponse_(e) {
+function getFormResponse_(e: GoogleAppsScript.Events.SheetsOnFormSubmit) {
   let googleForm = getFormFromSubmissionEvent(e);
+  if (googleForm == null) {
+    return null;
+  }
 
   // Get the form response based on the timestamp
   let timestamp = new Date(e.namedValues.Timestamp[0]);
   let formResponse = googleForm.getResponses(timestamp).pop();
 
-  if (formResponse == null ) {
+  if (formResponse == null) {
     sheetLog("getEditResponseUrl_(e): Main method to get formResponse failed");
-//    happens sometimes. Timestamp from namedValues is a bit later than the timestamp in the sheet
+    //    happens sometimes. Timestamp from namedValues is a bit later than the timestamp in the sheet
     // probably due to lack of milliseconds in sheet
-    let sheet = SpreadsheetApp.getActive().getSheetByName(e.range.getSheet().getName())
-    let row = e.range.getRow()
+    let sheet = SpreadsheetApp.getActive().getSheetByName(
+      e.range.getSheet().getName(),
+    );
+    if (sheet == null) {
+      sheetLog(
+        "getEditResponseUrl_(e): Sheet not found: " +
+          e.range.getSheet().getName(),
+      );
+      return null;
+    }
+    let row = e.range.getRow();
     let timestamp = sheet.getRange(row, 1).getValue();
     let formResponse = googleForm.getResponses(timestamp).pop();
-    if (formResponse == null)
-      return null;
+    if (formResponse == null) return null;
 
     // make sure the email in the sheet is the same with the enamedvalues
     // to avoid sending the form to another user
     if (e.namedValues.email != sheet.getRange(row, 2).getValue())
-        return formResponse;
+      return formResponse;
   }
-  return formResponse
+  return formResponse;
 }
 
-function getFormResponseSheet_(formId) {
-  const sheets = SpreadsheetApp.getActive().getSheets().filter(
-    function (sheet) {
-      let url = sheet.getFormUrl()
+function getFormResponseSheet_(formId: string) {
+  const sheets = SpreadsheetApp.getActive()
+    .getSheets()
+    .filter(function (sheet) {
+      let url = sheet.getFormUrl();
       if (url != null) {
-        let form = FormApp.openByUrl(url)
+        let form = FormApp.openByUrl(url);
         return form.getId() === formId;
       }
       return false;
@@ -46,18 +67,18 @@ function getFormResponseSheet_(formId) {
   return sheets[0]; // a `Sheet` or `undefined`
 }
 
-
 function generateRandomKey(): string {
   let length = 5;
   let text = "";
-  let possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let possible =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
   text = ""; //Reset text to empty string
-  for(let i=0;i<length;i++){
+  for (let i = 0; i < length; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
   Logger.log(text);
-  return text
+  return text;
 }
 
 /**
@@ -66,7 +87,7 @@ function generateRandomKey(): string {
  */
 function generateUniqueKey(): string {
   let key = generateRandomKey();
-  while(isProjectkey(key)) {
+  while (isProjectkey(key)) {
     key = generateRandomKey();
   }
   return key;
@@ -74,8 +95,8 @@ function generateUniqueKey(): string {
 
 function deleteAllSheetsWithForms() {
   let sheets = SpreadsheetApp.getActive().getSheets();
-  for(let sh = 0; sh < sheets.length; sh++) {
-    let url = sheets[sh].getFormUrl()
+  for (let sh = 0; sh < sheets.length; sh++) {
+    let url = sheets[sh].getFormUrl();
     if (url != null) {
       let form = FormApp.openByUrl(url);
       Logger.log("Sheet %s URL %s", sheets[sh].getName(), form.getId());
@@ -96,7 +117,7 @@ function deleteAllSheetsWithForms() {
  */
 function fillWithUnderScore(str: string, len: number): string {
   let strLen = str.length;
-  for(let i = 0; i < len - strLen; i++) {
+  for (let i = 0; i < len - strLen; i++) {
     str += "_";
   }
   return str;

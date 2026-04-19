@@ -3,7 +3,7 @@ function sendEmailForConfirmation_(student: Student) {
   let email = student.email;
   let key = student.personalkey;
 
-  let ss = SpreadsheetApp.getActive().getSheetByName('Links');
+  let ss = SpreadsheetApp.getActive().getSheetByName("Links");
 
   let link = FormApp.openById(getVerificationFormId()).getPublishedUrl();
 
@@ -17,10 +17,11 @@ function sendEmailForConfirmation_(student: Student) {
   sendEmailWrapper(
     email,
     "PA: Confirm your registration",
-    'In order to complete your registration please visit this ' + link + '"',
-    {                        // body
-      htmlBody: template.evaluate().getContent()                 // advanced options
-    }
+    "In order to complete your registration please visit this " + link + '"',
+    {
+      // body
+      htmlBody: template.evaluate().getContent(), // advanced options
+    },
   );
 }
 
@@ -36,26 +37,29 @@ function sendSubmissionMail(student: Student, paname: string, editURL: string) {
   sendEmailWrapper(
     student.email,
     "PA: Successful submission of peer assessment",
-    'Congratulations! You have successfully completed your peer assessment',
-    {                        // body
-      htmlBody: template.evaluate().getContent()                 // advanced options
-    })
+    "Congratulations! You have successfully completed your peer assessment",
+    {
+      // body
+      htmlBody: template.evaluate().getContent(), // advanced options
+    },
+  );
 }
 
 function sendEmailForSuccess(student: Student) {
-  var ss = SpreadsheetApp.getActive().getSheetByName('Links');
+  var ss = SpreadsheetApp.getActive().getSheetByName("Links");
   var template = HtmlService.createTemplateFromFile("html/successful.html");
-  template.name = student.fname
-  template.key = student.personalkey
+  template.name = student.fname;
+  template.key = student.personalkey;
   sendEmailWrapper(
     student.email,
     "PA: Successful registration",
-    'Congratulations! You have successfully completed your registration.\nKeep your ' +
-    student.personalkey +
-    ' for completing peer assessments.',
+    "Congratulations! You have successfully completed your registration.\nKeep your " +
+      student.personalkey +
+      " for completing peer assessments.",
     {
-      htmlBody: template.evaluate().getContent()
-    })
+      htmlBody: template.evaluate().getContent(),
+    },
+  );
 }
 
 function sendReminderPA_(pa: PeerAssessment, student: Student) {
@@ -64,7 +68,9 @@ function sendReminderPA_(pa: PeerAssessment, student: Student) {
 
   let pp = getPaProject(pa.id, student.projectkey);
   if (pp == null) {
-    sheetLog(`sendReminderPA_: No PA project row found for ${pa.id} and ${student.projectkey}.`);
+    sheetLog(
+      `sendReminderPA_: No PA project row found for ${pa.id} and ${student.projectkey}.`,
+    );
     return;
   }
 
@@ -80,7 +86,7 @@ function sendReminderPA_(pa: PeerAssessment, student: Student) {
   template.paname = pa.name;
 
   if (!getSettings().domain) {
-    template.key = "Your personal key is: " + student.personalkey + ". "
+    template.key = "Your personal key is: " + student.personalkey + ". ";
   }
 
   //  Logger.log(template.evaluate().getContent())
@@ -88,14 +94,20 @@ function sendReminderPA_(pa: PeerAssessment, student: Student) {
   sendEmailWrapper(
     email,
     "PA: Reminder for peer assessment: " + pa.name,
-    'This is a reminder that you need to complete your peer assessment. Note that there is a penalty for not completing the peer assessment.',
-    {                        // body
-      htmlBody: template.evaluate().getContent()                 // advanced options
-    })
-
+    "This is a reminder that you need to complete your peer assessment. Note that there is a penalty for not completing the peer assessment.",
+    {
+      // body
+      htmlBody: template.evaluate().getContent(), // advanced options
+    },
+  );
 }
 
-function sendEmailResults(pa: PeerAssessment, student: Student, grade: number, pascore: number) {
+function sendEmailResults(
+  pa: PeerAssessment,
+  student: Student,
+  grade: number,
+  pascore: number,
+) {
   var settings = getSettings();
 
   var template = HtmlService.createTemplateFromFile("html/announce.html");
@@ -114,38 +126,44 @@ function sendEmailResults(pa: PeerAssessment, student: Student, grade: number, p
     template.grade = "";
   }
 
-
   //  Logger.log(template.evaluate().getContent())
 
   sendEmailWrapper(
     student.email,
     "PA: Results for peer assessment: " + pa.name,
-    '',
-    {                        // body
-      htmlBody: template.evaluate().getContent()                 // advanced options
-    })
+    "",
+    {
+      // body
+      htmlBody: template.evaluate().getContent(), // advanced options
+    },
+  );
 }
-
 
 function sendEmailWrapper(
   recipient: string,
   subject: string,
   body: string,
-  options?: GoogleAppsScript.Gmail.GmailAdvancedOptions) {
-
+  options?: GoogleAppsScript.Gmail.GmailAdvancedOptions,
+) {
   if (testMode) {
     Logger.log("TEST MODE ON; Mocking emails");
-    sheetLog('MOCKING EMAIL SENT (with options)');
-    sheetLog("TO: " + recipient + "\nSUBJECT: " + subject + "\nBODY: " + body + "\nOPTIONS: " + JSON.stringify(options));
+    sheetLog("MOCKING EMAIL SENT (with options)");
+    sheetLog(
+      "TO: " +
+        recipient +
+        "\nSUBJECT: " +
+        subject +
+        "\nBODY: " +
+        body +
+        "\nOPTIONS: " +
+        JSON.stringify(options),
+    );
     return;
   }
 
-  if (typeof options !== 'undefined') {
+  if (typeof options !== "undefined") {
     GmailApp.sendEmail(recipient, subject, body, options);
   } else {
     GmailApp.sendEmail(recipient, subject, body);
   }
 }
-
-
-

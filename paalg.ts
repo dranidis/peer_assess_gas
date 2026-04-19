@@ -8,7 +8,12 @@
  * @param self
  * @param debug
  */
-function getPAresults(formId: string, projectkey: string, self: boolean, debug: boolean) {
+function getPAresults(
+  formId: string,
+  projectkey: string,
+  self: boolean,
+  debug: boolean,
+) {
   // offset 2: when no google accounts are used the form contains extra  2 responses: email and personalkey
   let offset = 2;
   if (getSettings().domain) {
@@ -17,67 +22,68 @@ function getPAresults(formId: string, projectkey: string, self: boolean, debug: 
 
   let responseMap = getPAResponses_(formId);
   let questions = getQuestions();
-//  Logger.log(questions);
+  //  Logger.log(questions);
   let students = getStudents(projectkey);
 
-  var debugLog = function() {
+  var debugLog = function () {
     if (debug) {
       for (let student of students) {
-        Logger.log("getPAresults:" + student.email + ":" + responseMap[student.email]);
+        Logger.log(
+          "getPAresults:" + student.email + ":" + responseMap[student.email],
+        );
       }
     }
-  }
+  };
 
   debugLog();
-  var penalty = []
+  var penalty: { [email: string]: boolean } = {};
 
   if (!self) {
     // dealing with non-submsissions
-    for (let i=0; i < students.length; i++) {
-      let e = students[i].email;
+    for (let i = 0; i < students.length; i++) {
+      const e = students[i].email;
       penalty[e] = false;
 
       if (responseMap[e] == null) {
         penalty[e] = true;
-        responseMap[e] = []
-        for(let q = 0; q < questions.length; q++) {
-          responseMap[e][offset+q]=[]
-          for (let s=0; s < students.length; s++) {
-            responseMap[e][offset+q][s] = 3; // for non submissions we set all grades to 3
+        responseMap[e] = [];
+        for (let q = 0; q < questions.length; q++) {
+          responseMap[e][offset + q] = [];
+          for (let s = 0; s < students.length; s++) {
+            responseMap[e][offset + q][s] = 3; // for non submissions we set all grades to 3
           }
         }
       }
     }
 
-      debugLog();
+    debugLog();
 
     // not taking into account self assessment
-    for (let i=0; i < students.length; i++) {
+    for (let i = 0; i < students.length; i++) {
       let e = students[i].email;
       if (responseMap[e] != null) {
-        for(let q = 0; q < questions.length; q++) {
-          responseMap[e][offset+q][i] = 0;
+        for (let q = 0; q < questions.length; q++) {
+          responseMap[e][offset + q][i] = 0;
         }
       }
     }
-
   }
-
 
   let submitted = 0;
   // normalize values
-  for (let i=0; i < students.length; i++) {
+  for (let i = 0; i < students.length; i++) {
     let e = students[i].email;
     if (responseMap[e] != null) {
       submitted++;
 
-      for(let q = 0; q < questions.length; q++) {
+      for (let q = 0; q < questions.length; q++) {
         let sum = 0.0;
-        for(let s = 0; s < responseMap[e][offset+q].length; s++) {
-          sum += Number(responseMap[e][offset+q][s]);
+        for (let s = 0; s < responseMap[e][offset + q].length; s++) {
+          sum += Number(responseMap[e][offset + q][s]);
         }
-        for(let s = 0; s < responseMap[e][offset+q].length; s++) {
-          responseMap[e][offset+q][s] = Number(responseMap[e][offset+q][s]) / sum;
+        for (let s = 0; s < responseMap[e][offset + q].length; s++) {
+          responseMap[e][offset + q][s] =
+            Number(responseMap[e][offset + q][s]) / sum;
         }
       }
     }
@@ -87,38 +93,38 @@ function getPAresults(formId: string, projectkey: string, self: boolean, debug: 
 
   debugLog();
 
-  let score = []
-  for (let i=0; i < students.length; i++) {
-    let e = students[i].email;
-    score[e] = [];
-    for(let q = 0; q < questions.length; q++) {
+  let score: { [email: string]: number[] } = {};
+  for (let i = 0; i < students.length; i++) {
+    const email = students[i].email;
+    score[email] = [];
+    for (let q = 0; q < questions.length; q++) {
       let sum = 0.0;
-      for (let j=0; j < students.length; j++) {
-        let r = students[j].email;
+      for (let j = 0; j < students.length; j++) {
+        const r = students[j].email;
         if (responseMap[r] != null) {
-          sum += Number(responseMap[r][offset+q][i]);
+          sum += Number(responseMap[r][offset + q][i]);
         }
       }
-      score[e][q] = sum * factor;
+      score[email][q] = sum * factor;
     }
   }
 
   // calculating avg
-  for (let i=0; i < students.length; i++) {
+  for (let i = 0; i < students.length; i++) {
     let e = students[i].email;
     let avg = 0;
     for (let q = 0; q < score[e].length; q++) {
       avg += score[e][q];
     }
-    avg /= score[e].length
+    avg /= score[e].length;
     // add average as first number
-    score[e].unshift(avg)
+    score[e].unshift(avg);
     if (debug) {
       Logger.log("AVG " + avg);
       Logger.log(score[e]);
     }
   }
-  return {scores:score, penalty:penalty};
+  return { scores: score, penalty: penalty };
 }
 
 /**
@@ -131,7 +137,12 @@ function getPAresults(formId: string, projectkey: string, self: boolean, debug: 
  * @param weight
  * @param penalty
  */
-function calculateGrade(grade: number, pascore: number, weight: number, penalty: number) {
+function calculateGrade(
+  grade: number,
+  pascore: number,
+  weight: number,
+  penalty: number,
+) {
   let adjgrade = grade * weight;
   let fixedgrade = grade - adjgrade;
   let pagrade = adjgrade * pascore + fixedgrade;
@@ -139,22 +150,22 @@ function calculateGrade(grade: number, pascore: number, weight: number, penalty:
   return pagrade;
 }
 
-function getPAResponses_(formId) {
-  let emailresponses = getFormResponses(formId)
-  let emails = emailresponses.emails;
-  let responses = emailresponses.responses;
+function getPAResponses_(formId: string): { [email: string]: any[] } {
+  const emailresponses = getFormResponses(formId);
+  const emails = emailresponses.emails;
+  const responses = emailresponses.responses;
 
-  let responseMap = [];
+  const responseMap: { [email: string]: any[] } = {};
   for (let i = 0; i < responses.length; i++) {
     if (emails[i] == "") {
-      let email: string = responses[i][0].getResponse();
+      const email: string = responses[i][0].getResponse();
       Logger.log("getPAResponses_ email:" + email);
       responseMap[email] = [];
       for (let j = 0; j < responses[i].length; j++) {
         responseMap[email][j] = responses[i][j].getResponse();
       }
     } else {
-      let email = emails[i];
+      const email: string = emails[i];
       Logger.log("getPAResponses_ email (google):" + email);
       responseMap[email] = [];
       for (let j = 0; j < responses[i].length; j++) {
@@ -165,13 +176,16 @@ function getPAResponses_(formId) {
   return responseMap;
 }
 
-function getFormResponses(formId): {emails: string[], responses: any[][]} {
+function getFormResponses(formId: string): {
+  emails: string[];
+  responses: any[][];
+} {
   let form = FormApp.openById(formId);
   let formResponses = form.getResponses();
-  let responses = [];
-  let emails = [];
+  let responses: GoogleAppsScript.Forms.ItemResponse[][] = [];
+  let emails: string[] = [];
   for (let i = 0; i < formResponses.length; i++) {
-    responses[i] = []
+    responses[i] = [];
     let formResponse = formResponses[i];
     let email = "";
     if (getSettings().domain) {
@@ -182,9 +196,8 @@ function getFormResponses(formId): {emails: string[], responses: any[][]} {
     for (let j = 0; j < itemResponses.length; j++) {
       responses[i][j] = itemResponses[j];
     }
-    Logger.log("getFormResponses responses: " + responses[i])
+    Logger.log("getFormResponses responses: " + responses[i]);
     emails[i] = email;
   }
-  return {emails: emails, responses: responses}
+  return { emails: emails, responses: responses };
 }
-

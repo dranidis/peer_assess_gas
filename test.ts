@@ -14,6 +14,13 @@
 // } // Class GasTap is ready for use now!
 
 // var test = new GasTap();
+interface GasTapTest {
+  equal(actual: any, expected: any, message?: string): void;
+  ok(value: any, message?: string): void;
+  notOk(value: any, message?: string): void;
+}
+
+var test: (name: string, cb: (t: GasTapTest) => void) => void;
 
 /**
  * IMPORTANT:
@@ -30,7 +37,6 @@ let testMode: boolean = false;
  *
  *
  */
-
 
 function gastTestRunner() {
   testMode = true;
@@ -60,91 +66,100 @@ function gastTestRunner() {
 
 let testStudents: Student[] = [
   {
-    fname: 'Dimitris',
-    lname: 'Dranidis',
-    email: 'dranidis@gmail.com',
-    projectkey: 'PROJ123',
-    personalkey: 'aaaaa',
+    fname: "Dimitris",
+    lname: "Dranidis",
+    email: "dranidis@gmail.com",
+    projectkey: "PROJ123",
+    personalkey: "aaaaa",
     verified: true,
-    submittedpa: {}
+    submittedpa: {},
   },
   {
-    fname: 'DD',
-    lname: 'Tomail',
-    email: 'ddtomail@gmail.com',
-    projectkey: 'PROJ456',
-    personalkey: '',
+    fname: "DD",
+    lname: "Tomail",
+    email: "ddtomail@gmail.com",
+    projectkey: "PROJ456",
+    personalkey: "",
     verified: false,
-    submittedpa: {}
+    submittedpa: {},
   },
   {
-    fname: 'Dimi',
-    lname: 'Dran',
-    email: 'dranidis@citycollege.sheffield.eu',
-    projectkey: 'PROJ123',
-    personalkey: '',
+    fname: "Dimi",
+    lname: "Dran",
+    email: "dranidis@citycollege.sheffield.eu",
+    projectkey: "PROJ123",
+    personalkey: "",
     verified: false,
-    submittedpa: {}
-  }
+    submittedpa: {},
+  },
 ];
 
 let testProjects: Project[] = [
   {
-    name: 'Project1',
-    key: 'PROJ123',
+    name: "Project1",
+    key: "PROJ123",
   },
   {
-    name: 'Project2',
-    key: 'PROJ456',
+    name: "Project2",
+    key: "PROJ456",
   },
   {
-    name: 'Project3',
-    key: 'PROJ789',
-  }
+    name: "Project3",
+    key: "PROJ789",
+  },
 ];
 
 let testPAs: PeerAssessment[] = [
   {
     name: "Peer Assessment 1",
     id: "PA1",
-    deadline: new Date((new Date()).getTime() + 15 * my_MILLIS_PER_MINUTE),
-    state: PaState.INACTIVE
-  }
-]
+    deadline: new Date(new Date().getTime() + 15 * my_MILLIS_PER_MINUTE),
+    state: PaState.INACTIVE,
+  },
+];
 
 function preSetupPA() {
   let ss = SpreadsheetApp.getActive().getSheetByName(PAS.sheet);
+  if (ss == null) {
+    sheetLog("preSetupPA: Sheet not found: " + PAS.sheet);
+    return;
+  }
   ss.getDataRange().offset(1, 0).clearContent();
 
-  for (let i = 0; i < testPAs.length; i++)
-    addPa(testPAs[i]);
+  for (let i = 0; i < testPAs.length; i++) addPa(testPAs[i]);
 }
 
 function preSetupStudents_() {
   let ss = SpreadsheetApp.getActive().getSheetByName(STUDENTS.sheet);
+  if (ss == null) {
+    sheetLog("preSetupStudents_: Sheet not found: " + STUDENTS.sheet);
+    return;
+  }
   ss.getDataRange().offset(1, 0).clearContent();
 
-  for (let i = 0; i < testStudents.length; i++)
-    addStudent(testStudents[i]);
+  for (let i = 0; i < testStudents.length; i++) addStudent(testStudents[i]);
 }
 
 function preSetupProjects_() {
   let ss = SpreadsheetApp.getActive().getSheetByName(PROJECTS.sheet);
+  if (ss == null) {
+    sheetLog("preSetupProjects_: Sheet not found: " + PROJECTS.sheet);
+    return;
+  }
   ss.getDataRange().offset(1, 0).clearContent();
 
-  for (let project of testProjects)
-    addProject(project);
+  for (let project of testProjects) addProject(project);
 }
 
 function testgetProjects() {
   preSetupProjects_();
 
-  test('getProjects', function (t) {
+  test("getProjects", function (t) {
     let act = getProjects();
-    t.equal(act.length, testProjects.length, 'number is right')
+    t.equal(act.length, testProjects.length, "number is right");
     for (let i = 0; i < act.length; i++) {
-      t.equal(act[i].data.name, testProjects[i].name, 'getProjects name' + i);
-      t.equal(act[i].data.key, testProjects[i].key, 'getProjects key' + i);
+      t.equal(act[i].data.name, testProjects[i].name, "getProjects name" + i);
+      t.equal(act[i].data.key, testProjects[i].key, "getProjects key" + i);
     }
   });
 }
@@ -152,12 +167,12 @@ function testgetProjects() {
 function testGetProjectKeys() {
   preSetupProjects_();
 
-  test('testGetProjectKeys', function (t) {
+  test("testGetProjectKeys", function (t) {
     let act = getProjectKeys();
-    t.equal(act.length, testProjects.length, 'length');
+    t.equal(act.length, testProjects.length, "length");
 
     for (let i = 0; i < act.length; i++) {
-      t.equal(act[i], testProjects[i].key, 'key' + i);
+      t.equal(act[i], testProjects[i].key, "key" + i);
     }
   });
 }
@@ -165,83 +180,82 @@ function testGetProjectKeys() {
 function testIsProjectkey() {
   preSetupProjects_();
 
-  test('isProjectkey', function (t) {
+  test("isProjectkey", function (t) {
     let isKey = isProjectkey(testProjects[0].key);
-    t.ok(isKey, 'isProjectkey')
+    t.ok(isKey, "isProjectkey");
   });
 
-  test('isProjectkey', function (t) {
+  test("isProjectkey", function (t) {
     let isKey = isProjectkey("projX");
-    t.notOk(isKey, 'not isProjectkey')
+    t.notOk(isKey, "not isProjectkey");
   });
 }
 
 function testGetGroup() {
   preSetupStudents_();
 
-  test('getGroup', function (t) {
+  test("getGroup", function (t) {
     let group = getGroup(testStudents[0].email);
-    t.equal(group, testStudents[0].projectkey, 'getGroup first row')
+    t.equal(group, testStudents[0].projectkey, "getGroup first row");
   });
 
-  test('getGroup', function (t) {
+  test("getGroup", function (t) {
     let group = getGroup("whos@citycollege.sheffield.eu");
-    t.equal(group, null, 'getGroup not existing')
+    t.equal(group, null, "getGroup not existing");
   });
 }
 
 function testGetStudents() {
   preSetupStudents_();
 
-  test('getStudents', function (t) {
+  test("getStudents", function (t) {
     let act = getStudents(testStudents[0].projectkey);
-    t.equal(act[0].email, testStudents[0].email, 'getStudents 0')
-    t.equal(act[1].email, testStudents[2].email, 'getStudents 2')
+    t.equal(act[0].email, testStudents[0].email, "getStudents 0");
+    t.equal(act[1].email, testStudents[2].email, "getStudents 2");
   });
 }
 
 function testGetStudent() {
   preSetupStudents_();
 
-  test('getStudent', function (t) {
+  test("getStudent", function (t) {
     let act = getStudent(testStudents[2].email);
-    t.equal(act.data.email, testStudents[2].email, 'getStudent');
+    t.notOk(act == null, "getStudent not null");
+    if (act != null)
+      t.equal(act.data.email, testStudents[2].email, "getStudent");
   });
 
-  test('getStudent', function (t) {
+  test("getStudent", function (t) {
     let act = getStudent("some@gmail.com");
-    t.equal(act, null, 'getStudent null');
+    t.equal(act, null, "getStudent null");
   });
 }
 
 function testCalculateGrade() {
-  test('calculateGrade', function (t) {
-    let grade = calculateGrade(80, 0.41, .5, .1)
-    t.equal(grade, 50.76, 'calculateGrade a');
-    grade = calculateGrade(70, 1.05, .7, .2)
-    t.equal(grade, 57.96, 'calculateGrade b');
+  test("calculateGrade", function (t) {
+    let grade = calculateGrade(80, 0.41, 0.5, 0.1);
+    t.equal(grade, 50.76, "calculateGrade a");
+    grade = calculateGrade(70, 1.05, 0.7, 0.2);
+    t.equal(grade, 57.96, "calculateGrade b");
   });
 }
 
 function testFillWithUnderScore() {
+  test("fillWithUnderScore", function (t) {
+    let filled = fillWithUnderScore("name", 10);
+    t.equal(filled, "name______", "filled with 6 _");
 
-  test('fillWithUnderScore', function (t) {
-    let filled = fillWithUnderScore('name', 10);
-    t.equal(filled, 'name______', 'filled with 6 _');
+    filled = fillWithUnderScore("name", 4);
+    t.equal(filled, "name", "filled with 0 _");
 
-    filled = fillWithUnderScore('name', 4);
-    t.equal(filled, 'name', 'filled with 0 _');
-
-    filled = fillWithUnderScore('name', 3);
-    t.equal(filled, 'name', 'filled with 0 _');
-
+    filled = fillWithUnderScore("name", 3);
+    t.equal(filled, "name", "filled with 0 _");
   });
 }
 
 function testState() {
-
-  test('state enum', function (t) {
-    t.equal(PaState.OPEN, 'OPEN', 'OPEN');
+  test("state enum", function (t) {
+    t.equal(PaState.OPEN, "OPEN", "OPEN");
   });
 }
 
@@ -252,50 +266,46 @@ function testNotVerifiedStudents() {
   let projs = getProjects();
   let notVstuds = notVerifiedStudents();
 
-  test('allProjects', function (t) {
-    t.equal(projs.length, 3, '3 projects');
-    t.equal(projs[0].data.name, 'Project1');
-    t.equal(projs[1].data.name, 'Project2');
-    t.equal(projs[2].data.name, 'Project3');
+  test("allProjects", function (t) {
+    t.equal(projs.length, 3, "3 projects");
+    t.equal(projs[0].data.name, "Project1");
+    t.equal(projs[1].data.name, "Project2");
+    t.equal(projs[2].data.name, "Project3");
   });
 
-  test('notVerifiedStudents', function (t) {
-    t.equal(notVstuds.length, 2, '2 not verified');
-    t.equal(notVstuds[0].lname, 'Dran');
-    t.equal(notVstuds[1].lname, 'Tomail');
+  test("notVerifiedStudents", function (t) {
+    t.equal(notVstuds.length, 2, "2 not verified");
+    t.equal(notVstuds[0].lname, "Dran");
+    t.equal(notVstuds[1].lname, "Tomail");
   });
-
 }
 
 function testGetQuestions() {
   let questions = getQuestions();
-  test('getQuestions', function (t) {
-    t.equal(questions.length, 12, '12 questions');
+  test("getQuestions", function (t) {
+    t.equal(questions.length, 12, "12 questions");
   });
 }
 
 function testGetSettings() {
   let settings = getSettings();
-  test('getSettings', function (t) {
+  test("getSettings", function (t) {
     t.equal(settings.weight, 0.6);
     t.equal(settings.penalty, 0.2);
     t.equal(settings.self, false);
     t.equal(settings.reminder1, 24);
     t.equal(settings.reminder2, 6);
-    t.equal(settings.timeunit, 'hour');
+    t.equal(settings.timeunit, "hour");
     t.equal(settings.mailpa, true);
     t.equal(settings.mailgrade, true);
     t.equal(settings.domain, true);
   });
 }
 
-
-
 /**
  * e2e test
  */
 function testOpenPA() {
-
   preSetupProjects_();
   preSetupStudents_();
   preSetupPA();
@@ -307,8 +317,9 @@ function testOpenPA() {
 
   let updatedPa = getPA(pas[0].id);
 
-  test('peer assesment', function (t) {
-    t.equal(updatedPa.state, PaState.OPEN, 'is opened');
+  test("peer assesment", function (t) {
+    t.notOk(updatedPa == null, "pa not null");
+    if (updatedPa != null) t.equal(updatedPa.state, PaState.OPEN, "is opened");
   });
 
   testGetPaProjects();
@@ -316,11 +327,14 @@ function testOpenPA() {
 
 function testGetPaProjects() {
   let paProjects = getPaProjects();
-  test('pa projects', function (t) {
-    t.equal(paProjects.length, 1, ' on pa project');
-    t.equal(paProjects[0].data.pakey, getPAs()[0].id, 'pa key is correct');
-    t.equal(paProjects[0].data.projectkey, testProjects[0].key, 'project key is correct');
-    t.ok(paProjects[0].data.formId, 'there is a form id');
-  })
-
+  test("pa projects", function (t) {
+    t.equal(paProjects.length, 1, " on pa project");
+    t.equal(paProjects[0].data.pakey, getPAs()[0].id, "pa key is correct");
+    t.equal(
+      paProjects[0].data.projectkey,
+      testProjects[0].key,
+      "project key is correct",
+    );
+    t.ok(paProjects[0].data.formId, "there is a form id");
+  });
 }

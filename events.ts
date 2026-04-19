@@ -2,23 +2,36 @@ var my_MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
 var my_MILLIS_PER_HOUR = 1000 * 60 * 60;
 var my_MILLIS_PER_MINUTE = 1000 * 60;
 
-function getReminderTime(deadline, reminderIndex): Date {
+function getReminderTime(deadline: Date, reminderIndex: number): Date {
   const settings = getSettings();
-  const x = settings['reminder' + reminderIndex];
+
+  let x: number;
+  switch (reminderIndex) {
+    case 1:
+      x = settings["reminder1"];
+      break;
+    case 2:
+      x = settings["reminder2"];
+      break;
+    default:
+      x = settings["reminder1"];
+  }
 
   let unit: number;
   switch (settings.timeunit) {
-    case 'min':
+    case "min":
       unit = my_MILLIS_PER_MINUTE;
       break;
-    case 'hour':
+    case "hour":
       unit = my_MILLIS_PER_HOUR;
       break;
-    case 'day':
+    case "day":
       unit = my_MILLIS_PER_DAY;
       break;
     default:
-      Logger.log("getReminderTime: Unknown timeunit in settings. Using day as unit")
+      Logger.log(
+        "getReminderTime: Unknown timeunit in settings. Using day as unit",
+      );
       unit = my_MILLIS_PER_DAY;
   }
 
@@ -40,13 +53,20 @@ var ARGUMENTS_KEY = "arguments";
  * @param {boolean} recurring - Whether the trigger is recurring; if not the
  *   arguments and the trigger are removed once it called the function
  */
-function setupTriggerArguments(trigger, functionArguments, recurring) {
+function setupTriggerArguments(
+  trigger: GoogleAppsScript.Script.Trigger,
+  functionArguments: string[],
+  recurring: boolean,
+) {
   const triggerUid = trigger.getUniqueId();
-  const triggerData = {};
+  const triggerData: { [key: string]: boolean | string[] } = {};
   triggerData[RECURRING_KEY] = recurring;
   triggerData[ARGUMENTS_KEY] = functionArguments;
 
-  PropertiesService.getScriptProperties().setProperty(triggerUid, JSON.stringify(triggerData));
+  PropertiesService.getScriptProperties().setProperty(
+    triggerUid,
+    JSON.stringify(triggerData),
+  );
 }
 
 /**
@@ -56,9 +76,14 @@ function setupTriggerArguments(trigger, functionArguments, recurring) {
  * @param {string} triggerUid - The trigger id
  * @return {*} - The arguments stored for this trigger
  */
-function handleTriggered(triggerUid) {
+function handleTriggered(triggerUid: string) {
   const scriptProperties = PropertiesService.getScriptProperties();
-  const triggerData = JSON.parse(scriptProperties.getProperty(triggerUid));
+  const triggerDataString = scriptProperties.getProperty(triggerUid);
+  if (triggerDataString == null) {
+    console.error("No trigger data found for trigger with id '%s'", triggerUid);
+    return null;
+  }
+  const triggerData = JSON.parse(triggerDataString);
 
   if (!triggerData[RECURRING_KEY]) {
     deleteTriggerByUid(triggerUid);
@@ -72,7 +97,7 @@ function handleTriggered(triggerUid) {
  *
  * @param {string} triggerUid - The trigger id
  */
-function deleteTriggerArguments(triggerUid) {
+function deleteTriggerArguments(triggerUid: string) {
   PropertiesService.getScriptProperties().deleteProperty(triggerUid);
 }
 
@@ -83,15 +108,17 @@ function deleteTriggerArguments(triggerUid) {
  *
  * @param {string} triggerUid - The trigger id
  */
-function deleteTriggerByUid(triggerUid) {
-  if (!ScriptApp.getProjectTriggers().some(function (trigger) {
-    if (trigger.getUniqueId() === triggerUid) {
-      ScriptApp.deleteTrigger(trigger);
-      return true;
-    }
+function deleteTriggerByUid(triggerUid: string) {
+  if (
+    !ScriptApp.getProjectTriggers().some(function (trigger) {
+      if (trigger.getUniqueId() === triggerUid) {
+        ScriptApp.deleteTrigger(trigger);
+        return true;
+      }
 
-    return false;
-  })) {
+      return false;
+    })
+  ) {
     console.error("Could not find trigger with id '%s'", triggerUid);
   }
 
@@ -100,23 +127,24 @@ function deleteTriggerByUid(triggerUid) {
 
 /**
  * Deletes a trigger and its arguments.
- *
- * @param {Trigger} trigger - The trigger
  */
-function deleteTrigger(trigger) {
+function deleteTrigger(trigger: GoogleAppsScript.Script.Trigger) {
   ScriptApp.deleteTrigger(trigger);
   deleteTriggerArguments(trigger.getUniqueId());
 }
 
 function example() {
-  var trigger = ScriptApp.newTrigger("exampleTriggerFunction").timeBased()
+  var trigger = ScriptApp.newTrigger("exampleTriggerFunction")
+    .timeBased()
     .after(5 * 1000)
     .create();
 
   setupTriggerArguments(trigger, ["a", "b", "c"], false);
 }
 
-function exampleTriggerFunction(event) {
+function exampleTriggerFunction(
+  event: GoogleAppsScript.Events.AppsScriptEvent,
+) {
   var functionArguments = handleTriggered(event.triggerUid);
   console.info("Function arguments: %s", functionArguments);
 }

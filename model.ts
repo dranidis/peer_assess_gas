@@ -115,11 +115,15 @@ let SHEETS = [
  */
 function getData_<T>(sheetModel: Sheet): T[] {
   let sp = SpreadsheetApp.getActive().getSheetByName(sheetModel.sheet);
+  if (sp == null) {
+    sheetLog("Sheet not found: " + sheetModel.sheet);
+    return [];
+  }
   let values = sp.getDataRange().getValues();
   let heading = values.shift();
   let entries: T[] = [];
   for (let value of values) {
-    let entry = {};
+    let entry: any = {};
     var isData = false;
 
     for (let c = 0; c < value.length; c++) {
@@ -165,6 +169,10 @@ Questions
 
 function installQuestions() {
   var setSh = SpreadsheetApp.getActive().getSheetByName(QUESTIONS.sheet);
+  if (setSh == null) {
+    sheetLog("Sheet not found: " + QUESTIONS.sheet);
+    return;
+  }
   var values = [
     ["Completed an equal (or even more) share of work."],
     ["Produced high quality work."],
@@ -220,8 +228,16 @@ respective pa.
 */
 function getAllStudents(): Student[] {
   var sheet = SpreadsheetApp.getActive().getSheetByName(STUDENTS.sheet);
+  if (sheet == null) {
+    sheetLog("getAllStudents: Sheet not found: " + STUDENTS.sheet);
+    return [];
+  }
   var values = sheet.getDataRange().getValues();
   var heading = values.shift();
+  if (heading == null) {
+    sheetLog("getAllStudents: No heading found in sheet: " + STUDENTS.sheet);
+    return [];
+  }
   var students = [];
 
   for (var index = 0; index < values.length; index++) {
@@ -251,6 +267,10 @@ function getAllStudents(): Student[] {
 
 function addStudent(reg: Student) {
   var ss = SpreadsheetApp.getActive().getSheetByName(STUDENTS.sheet);
+  if (ss == null) {
+    sheetLog("addStudent: Sheet not found: " + STUDENTS.sheet);
+    return;
+  }
   ss.appendRow([
     reg.fname,
     reg.lname,
@@ -264,6 +284,10 @@ function addStudent(reg: Student) {
 function saveStudent(student: Row<Student>) {
   var row = student.row;
   var ss = SpreadsheetApp.getActive().getSheetByName(STUDENTS.sheet);
+  if (ss == null) {
+    sheetLog("saveStudent: Sheet not found: " + STUDENTS.sheet);
+    return;
+  }
   var data = student.data;
   var values = [
     data.fname,
@@ -276,7 +300,7 @@ function saveStudent(student: Row<Student>) {
   ss.getRange(row, 1, 1, values.length).setValues([values]);
 }
 
-function getStudent(email: string): Row<Student> {
+function getStudent(email: string): Row<Student> | null {
   var students = getAllStudents();
   for (var i = 0; i < students.length; i++) {
     if (students[i].email == email) {
@@ -293,7 +317,7 @@ function getStudents(group: string): Student[] {
   });
 }
 
-function getGroup(studentEmail: string): string {
+function getGroup(studentEmail: string): string | null {
   var student = getStudent(studentEmail);
   if (student == null) return null;
   return student.data.projectkey;
@@ -301,12 +325,20 @@ function getGroup(studentEmail: string): string {
 
 function studentsHeading(): string[] {
   var ss = SpreadsheetApp.getActive().getSheetByName(STUDENTS.sheet);
+  if (ss == null) {
+    sheetLog("studentsHeading: Sheet not found: " + STUDENTS.sheet);
+    return [];
+  }
   var heading = ss.getRange(1, 1, 1, ss.getLastColumn()).getValues();
   return heading[0];
 }
 
 function getStudentPAColumn_(pakey: string): number {
   var ss = SpreadsheetApp.getActive().getSheetByName(STUDENTS.sheet);
+  if (ss == null) {
+    sheetLog("getStudentPAColumn_: Sheet not found: " + STUDENTS.sheet);
+    return 0;
+  }
   var heading = ss.getRange(1, 1, 1, ss.getLastColumn()).getValues();
   Logger.log(heading);
   Logger.log("heading " + heading[0] + " " + heading[0].length);
@@ -320,6 +352,10 @@ function getStudentPAColumn_(pakey: string): number {
 
 function addColumnToStudent(pakey: string): number {
   var ss = SpreadsheetApp.getActive().getSheetByName(STUDENTS.sheet);
+  if (ss == null) {
+    sheetLog("addColumnToStudent: Sheet not found: " + STUDENTS.sheet);
+    return 0;
+  }
   var col = ss.getLastColumn() + 1;
   ss.getRange(1, ss.getLastColumn() + 1).setValue(pakey);
   return col;
@@ -328,9 +364,13 @@ function addColumnToStudent(pakey: string): number {
 function setStudentSubmittedPA(
   student: Row<Student>,
   pakey: string,
-  enabled: boolean
+  enabled: boolean,
 ) {
   var ss = SpreadsheetApp.getActive().getSheetByName(STUDENTS.sheet);
+  if (ss == null) {
+    sheetLog("setStudentSubmittedPA: Sheet not found: " + STUDENTS.sheet);
+    return;
+  }
   var col = getStudentPAColumn_(pakey);
   if (col == 0) {
     col = addColumnToStudent(pakey);
@@ -341,6 +381,10 @@ function setStudentSubmittedPA(
 
 function sortStudents() {
   var sheet = SpreadsheetApp.getActive().getSheetByName(STUDENTS.sheet);
+  if (sheet == null) {
+    sheetLog("sortStudents: Sheet not found: " + STUDENTS.sheet);
+    return;
+  }
   sheet
     .getDataRange()
     .offset(1, 0)
@@ -352,6 +396,10 @@ function sortStudents() {
 
 function setStudentVerified(student: Row<Student>, enabled: boolean) {
   var ss = SpreadsheetApp.getActive().getSheetByName(STUDENTS.sheet);
+  if (ss == null) {
+    sheetLog("setStudentVerified: Sheet not found: " + STUDENTS.sheet);
+    return;
+  }
   ss.getRange(student.row, 6).setValue(enabled);
 }
 
@@ -361,7 +409,7 @@ function setStudentVerified(student: Row<Student>, enabled: boolean) {
  * @param projectkey
  * @param pakey
  */
-function numStudentsSubmitted(projectkey: string, pakey): number {
+function numStudentsSubmitted(projectkey: string, pakey: string): number {
   var st = getStudents(projectkey).filter(function (s) {
     return s.submittedpa[pakey] == true;
   });
@@ -376,6 +424,10 @@ Projects
 
 function addProject(proj: Project) {
   var ss = SpreadsheetApp.getActive().getSheetByName(PROJECTS.sheet);
+  if (ss == null) {
+    sheetLog("addProject: Sheet not found: " + PROJECTS.sheet);
+    return;
+  }
   ss.appendRow([proj.name, proj.key]);
 }
 
@@ -407,6 +459,10 @@ let PA_FIRST_ROW = 2;
 
 function deletePALinks() {
   var sp = SpreadsheetApp.getActive().getSheetByName(PA_PROJECTS.sheet);
+  if (sp == null) {
+    sheetLog("deletePALinks: Sheet not found: " + PA_PROJECTS.sheet);
+    return;
+  }
   var c1 = getSheetColumn_(PA_PROJECTS, "formId");
   var c2 = getSheetColumn_(PA_PROJECTS, "formURL");
   var numRows = sp.getLastRow() - 1;
@@ -430,7 +486,7 @@ function getPaProjects(): Row<PaProject>[] {
   return getRows_<PaProject>(PA_PROJECTS);
 }
 
-function getPaProject(paid: string, projectkey: string): Row<PaProject> {
+function getPaProject(paid: string, projectkey: string): Row<PaProject> | null {
   var pps = getPaProjects().filter(function (pp) {
     return pp.data.pakey == paid && pp.data.projectkey == projectkey;
   });
@@ -445,13 +501,13 @@ function getPaProject(paid: string, projectkey: string): Row<PaProject> {
         paid +
         " and " +
         projectkey +
-        " keys!"
+        " keys!",
     );
   }
   return null;
 }
 
-function getGroupGrade(paid: string, projectkey: string): number {
+function getGroupGrade(paid: string, projectkey: string): number | null {
   var pp = getPaProject(paid, projectkey);
   if (pp == null) {
     return null;
@@ -461,16 +517,32 @@ function getGroupGrade(paid: string, projectkey: string): number {
 
 function addPaProject(paid: string, projectkey: string) {
   var sheet = SpreadsheetApp.getActive().getSheetByName(PA_PROJECTS.sheet);
+  if (sheet == null) {
+    sheetLog("addPaProject: Sheet not found: " + PA_PROJECTS.sheet);
+    return null;
+  }
   sheet.appendRow([paid, projectkey]);
   return getPaProject(paid, projectkey);
 }
 
-function savePeerAssessmentLinks(paid: string, projectkey: string, form) {
+function savePeerAssessmentLinks(
+  paid: string,
+  projectkey: string,
+  form: GoogleAppsScript.Forms.Form,
+) {
   var sheet = SpreadsheetApp.getActive().getSheetByName(PA_PROJECTS.sheet);
+  if (sheet == null) {
+    sheetLog("savePeerAssessmentLinks: Sheet not found: " + PA_PROJECTS.sheet);
+    return;
+  }
   var pp = getPaProject(paid, projectkey);
   if (pp == null) {
     sheetLog("Not found: " + paid + "," + projectkey);
     pp = addPaProject(paid, projectkey);
+    if (pp == null) {
+      sheetLog("Failed to add PA, Proj: " + paid + "," + projectkey);
+      return;
+    }
     sheetLog("PA, Proj added: " + paid + "," + projectkey);
   }
 
@@ -487,7 +559,7 @@ function getProjectkeyFromFormId(paFormId: string) {
   return null;
 }
 
-function getPaProjectFromFormId(paFormId: string): Row<PaProject> {
+function getPaProjectFromFormId(paFormId: string): Row<PaProject> | null {
   var pps = getPaProjects();
 
   for (var p = 0; p < pps.length; p++) {
@@ -508,11 +580,19 @@ PA_FIRST_ROW = 2;
 
 function addPa(reg: PeerAssessment) {
   var ss = SpreadsheetApp.getActive().getSheetByName(PAS.sheet);
+  if (ss == null) {
+    sheetLog("addPa: Sheet not found: " + PAS.sheet);
+    return;
+  }
   ss.appendRow([reg.name, reg.id, reg.deadline, reg.state]);
 }
 
-function readPA(row): PeerAssessment {
+function readPA(row: number): PeerAssessment | null {
   var ss = SpreadsheetApp.getActive().getSheetByName(PAS.sheet);
+  if (ss == null) {
+    sheetLog("readPA: Sheet not found: " + PAS.sheet);
+    return null;
+  }
   if (row > ss.getLastRow()) return null;
   var read = ss.getRange(row, 1, 1, 4).getValues();
   var values = read[0];
@@ -540,9 +620,15 @@ function getPA(paId: string) {
 
 function setState(pa: PeerAssessment, newState: PaState) {
   var ss = SpreadsheetApp.getActive().getSheetByName(PAS.sheet);
+  if (ss == null) {
+    sheetLog("setState: Sheet not found: " + PAS.sheet);
+    return;
+  }
   var last = ss.getLastRow();
   for (var row = PA_FIRST_ROW; row <= last; row++) {
-    if (readPA(row).id == pa.id) {
+    var paRow = readPA(row);
+    if (paRow == null) continue;
+    if (paRow.id == pa.id) {
       ss.getRange(row, 4).setValue(newState);
       return;
     }
@@ -564,8 +650,12 @@ function getLinks() {
   }, {});
 }
 
-function setRegistrationLink(form) {
+function setRegistrationLink(form: GoogleAppsScript.Forms.Form) {
   var linksSheet = SpreadsheetApp.getActive().getSheetByName(LINKS.sheet);
+  if (linksSheet == null) {
+    sheetLog("setRegistrationLink: Sheet not found: " + LINKS.sheet);
+    return;
+  }
   linksSheet.getRange("B2").setValue(form.getPublishedUrl());
   linksSheet.getRange("C2").setValue(form.getId());
   linksSheet.getRange("A2").setValue("Registration");
@@ -583,6 +673,10 @@ function getVerificationFormId() {
 
 function deleteLinks() {
   var sp = SpreadsheetApp.getActive().getSheetByName(LINKS.sheet);
+  if (sp == null) {
+    sheetLog("deleteLinks: Sheet not found: " + LINKS.sheet);
+    return;
+  }
   var c1 = getSheetColumn_(LINKS, "url");
   var c2 = getSheetColumn_(LINKS, "id");
   var numRows = sp.getLastRow() - 1;
@@ -599,11 +693,19 @@ Log
 
 function sheetLog(string: any) {
   var ss = SpreadsheetApp.getActive().getSheetByName(LOG.sheet);
+  if (ss == null) {
+    Logger.log("sheetLog: Sheet not found: " + LOG.sheet);
+    return;
+  }
   ss.appendRow([string]);
 }
 
-function logAllResponses_(e) {
+function logAllResponses_(e: GoogleAppsScript.Events.SheetsOnFormSubmit) {
   var ss = SpreadsheetApp.getActive().getSheetByName(LOG.sheet);
+  if (ss == null) {
+    Logger.log("logAllResponses_: Sheet not found: " + LOG.sheet);
+    return;
+  }
   ss.appendRow([JSON.stringify(e), new Date()]);
 }
 
@@ -614,6 +716,10 @@ Settings
 */
 function installSettings() {
   var setSh = SpreadsheetApp.getActive().getSheetByName(SETTINGS.sheet);
+  if (setSh == null) {
+    sheetLog("installSettings: Sheet not found: " + SETTINGS.sheet);
+    return;
+  }
   var values = [
     ["PA weight", "weight", 0.6],
     ["PA non-submission penalty", "penalty", 0.2],
@@ -648,5 +754,9 @@ function prepareFinalSheet(pa: PeerAssessment) {
   var sp = SpreadsheetApp.getActive();
   sp.insertSheet(getFinalSheetName(pa), sp.getNumSheets() + 1);
   var sh = sp.getSheetByName(getFinalSheetName(pa));
+  if (sh == null) {
+    sheetLog("prepareFinalSheet: Sheet not found: " + getFinalSheetName(pa));
+    return;
+  }
   sh.appendRow(["proj", "name", "email", "Grade", "Penalty", "PA score"]);
 }

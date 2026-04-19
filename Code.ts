@@ -35,6 +35,11 @@ function renameSheets() {
   for (let i = projects.length - 1; i >= 0; i--) {
     const paid = PropertiesService.getScriptProperties().getProperty("PA");
 
+    if (paid == null) {
+      sheetLog("No PA found in script properties");
+      return;
+    }
+
     const pp = getPaProject(paid, projects[i].data.key);
     if (pp == null) {
       sheetLog(
@@ -112,15 +117,25 @@ function createPATriggers_(pa: PeerAssessment) {
   ScriptApp.newTrigger("renameSheets").timeBased().after(10000).create(); // make less, check name?
 }
 
-function sendReminderToNonSubmissionsTriggered(event) {
+function sendReminderToNonSubmissionsTriggered(
+  event: GoogleAppsScript.Events.AppsScriptEvent,
+) {
   const functionArguments = handleTriggered(event.triggerUid);
   const pa = getPA(functionArguments);
+  if (pa == null) {
+    sheetLog("No PA found for id " + functionArguments);
+    return;
+  }
   sendReminderToNonSubmissions(pa);
 }
 
-function closePATriggered(event) {
+function closePATriggered(event: GoogleAppsScript.Events.AppsScriptEvent) {
   const functionArguments = handleTriggered(event.triggerUid);
   const pa = getPA(functionArguments);
+  if (pa == null) {
+    sheetLog("No PA found for id " + functionArguments);
+    return;
+  }
   closePA(pa);
 }
 
@@ -225,6 +240,14 @@ function sendReminderForConfirmation() {
     for (let s of notVerified) {
       if (s.personalkey == "") {
         var student = getStudent(s.email);
+        if (student == null) {
+          sheetLog(
+            "sendReminderForConfirmation: No student found for email " +
+              s.email,
+          );
+          continue;
+        }
+
         student.data.personalkey = generateUniqueKey();
         s.personalkey = student.data.personalkey;
         saveStudent(student);
@@ -254,7 +277,7 @@ function processPAForProject_(
   questions: string[],
   isFinal: boolean,
 ) {
-  let paProject: Row<PaProject> = getPaProject(peerass.id, project.data.key);
+  const paProject = getPaProject(peerass.id, project.data.key);
   if (paProject == null) {
     Browser.msgBox(
       "Peer assessment has not been opened for project " + project.data.name,
@@ -262,32 +285,43 @@ function processPAForProject_(
     return;
   }
 
-  var formId = paProject.data.formId;
-  var projectkey = project.data.key;
+  const formId = paProject.data.formId;
+  const projectkey = project.data.key;
 
-  var self = settings.self;
-  var weight = settings.weight;
-  var penalty = settings.penalty;
+  const self = settings.self;
+  const weight = settings.weight;
+  const penalty = settings.penalty;
 
   if (isNaN(weight)) {
     throw new Error("weight NaN");
   }
 
-  var debug = false;
-  var paResults = getPAresults(formId, projectkey, self, debug);
+  const debug = false;
+  const paResults = getPAresults(formId, projectkey, self, debug);
 
-  var students = getStudents(projectkey);
-  var queLen = questions.length;
+  const students = getStudents(projectkey);
+  const queLen = questions.length;
 
-  var sh = SpreadsheetApp.getActive().getSheetByName(newSheetName);
+  const sh = SpreadsheetApp.getActive().getSheetByName(newSheetName);
+  if (sh == null) {
+    Browser.msgBox("Sheet not found: " + newSheetName);
+    return;
+  }
 
-  var finalSh = null;
-  if (isFinal)
+  let finalSh = null;
+  if (isFinal) {
     finalSh = SpreadsheetApp.getActive().getSheetByName(
       getFinalSheetName(peerass),
     );
+  }
 
-  var groupGrade = getGroupGrade(peerass.id, project.data.key);
+  const groupGrade = getGroupGrade(peerass.id, project.data.key);
+  if (groupGrade == null) {
+    Browser.msgBox(
+      `Group grade not found for PA ${peerass.name} and project ${project.data.name}.`,
+    );
+    return;
+  }
 
   sh.appendRow(["PROJECT:", project.data.name]);
   sh.appendRow(["Group grade", groupGrade]);
@@ -306,12 +340,12 @@ function processPAForProject_(
   sh.appendRow(headingArr);
 
   for (var i = 0; i < students.length; i++) {
-    var e = students[i].email;
-    var pen = paResults.penalty[e] ? 1 * penalty : 0;
+    var email = students[i].email;
+    var pen = paResults.penalty[email] ? 1 * penalty : 0;
 
     var gradeBefore = calculateGrade(
       groupGrade,
-      Number(paResults.scores[e][0]),
+      Number(paResults.scores[email][0]),
       weight,
       0,
     );
@@ -319,7 +353,7 @@ function processPAForProject_(
 
     var grade = calculateGrade(
       groupGrade,
-      Number(paResults.scores[e][0]),
+      Number(paResults.scores[email][0]),
       weight,
       pen,
     );
@@ -328,23 +362,28 @@ function processPAForProject_(
     // ROUNDING UP
     gradeBefore = Math.round(gradeBefore);
     grade = Math.round(grade);
-    for (var k = 0; k < paResults.scores[e].length; k++) {
-      paResults.scores[e][k] = Math.round(100 * paResults.scores[e][k]) / 100;
+    for (var k = 0; k < paResults.scores[email].length; k++) {
+      paResults.scores[email][k] =
+        Math.round(100 * paResults.scores[email][k]) / 100;
     }
 
-    let values = [e, project.data.key, grade, pen, gradeBefore];
-    values = values.concat(paResults.scores[e]);
+    let values = [email, project.data.key, grade, pen, gradeBefore];
+    values = values.concat(paResults.scores[email]);
     sh.appendRow(values);
 
     if (isFinal) {
-      Logger.log([e, grade, paResults.scores[e][0]]);
+      Logger.log([email, grade, paResults.scores[email][0]]);
+      if (finalSh == null) {
+        Browser.msgBox("Final sheet not found: " + getFinalSheetName(peerass));
+        return;
+      }
       finalSh.appendRow([
         projectkey,
         students[i].lname,
-        e,
+        email,
         grade,
         pen,
-        paResults.scores[e][0],
+        paResults.scores[email][0],
       ]);
     }
   }
@@ -368,7 +407,12 @@ function processPA(pa: PeerAssessment, isFinal: boolean) {
     sp.insertSheet(newSheetName, sp.getNumSheets() + 1);
   } catch (e) {
     // already exists, so clear it
-    sp.getSheetByName(newSheetName).clearContents();
+    const sheet = sp.getSheetByName(newSheetName);
+    if (sheet == null) {
+      Browser.msgBox("Sheet not found: " + newSheetName);
+      return;
+    }
+    sheet.clearContents();
   }
 
   if (isFinal) {
@@ -379,6 +423,10 @@ function processPA(pa: PeerAssessment, isFinal: boolean) {
   var questions = getQuestions();
 
   var sh = SpreadsheetApp.getActive().getSheetByName(newSheetName);
+  if (sh == null) {
+    Browser.msgBox("Sheet not found: " + newSheetName);
+    return;
+  }
   sp.setActiveSheet(sh);
 
   var settings = getSettings();
@@ -411,6 +459,10 @@ function processPA(pa: PeerAssessment, isFinal: boolean) {
 
 function protectFinal_(pa: PeerAssessment) {
   var sheet = SpreadsheetApp.getActive().getSheetByName(getFinalSheetName(pa));
+  if (sheet == null) {
+    Browser.msgBox("Final sheet not found: " + getFinalSheetName(pa));
+    return;
+  }
   sheet
     .getRange(1, 1, 1, sheet.getLastColumn())
     .setBackground("black")
@@ -429,6 +481,10 @@ function protectFinal_(pa: PeerAssessment) {
 
 function announcePA(pa: PeerAssessment) {
   var sh = SpreadsheetApp.getActive().getSheetByName(getFinalSheetName(pa));
+  if (sh == null) {
+    Browser.msgBox("Final sheet not found: " + getFinalSheetName(pa));
+    return;
+  }
   var values = sh.getDataRange().offset(1, 0).getValues();
   var students = getAllStudents();
 
@@ -449,7 +505,11 @@ function announcePA(pa: PeerAssessment) {
   }
 }
 
-function handlePeerAss_(e, projectkey, pakey) {
+function handlePeerAss_(
+  e: GoogleAppsScript.Events.SheetsOnFormSubmit,
+  projectkey: string,
+  pakey: string,
+) {
   var pa = getPA(pakey);
 
   if (pa == null) {
@@ -460,6 +520,11 @@ function handlePeerAss_(e, projectkey, pakey) {
   var ss = SpreadsheetApp.getActive().getSheetByName(
     e.range.getSheet().getName(),
   );
+
+  if (ss == null) {
+    sheetLog("Sheet not found: " + e.range.getSheet().getName());
+    return;
+  }
 
   var emailData = ss.getRange(e.range.getRow(), 2).getValue();
   var emailData = emailData.toLowerCase();
@@ -498,6 +563,10 @@ function handlePeerAss_(e, projectkey, pakey) {
   sheetLog(studentRow);
 
   var formResponse = getFormResponse_(e);
+  if (formResponse == null) {
+    sheetLog("Form response not found for event " + e);
+    return;
+  }
   var editURL = formResponse.getEditResponseUrl();
   sheetLog("EDITURL: " + editURL);
 
@@ -537,11 +606,15 @@ function handlePeerAss_(e, projectkey, pakey) {
   sheetLog("PA Submitted");
 }
 
-function handleRegistration(e) {
+function handleRegistration(e: GoogleAppsScript.Events.SheetsOnFormSubmit) {
   sheetLog("Starting Registration");
   var ss = SpreadsheetApp.getActive().getSheetByName(
     e.range.getSheet().getName(),
   );
+  if (ss == null) {
+    sheetLog("Sheet not found: " + e.range.getSheet().getName());
+    return;
+  }
 
   let reg: Student;
   if (getSettings().domain) {
@@ -583,6 +656,10 @@ function handleRegistration(e) {
     // no verification needed
     addStudent(reg);
     var student = getStudent(reg.email);
+    if (student == null) {
+      sheetLog("handleRegistration: No student found for email " + reg.email);
+      return;
+    }
     setStudentVerified(student, true);
     sendEmailForSuccess(student.data);
     Logger.log("VER: " + reg.email + " Verified");
@@ -595,13 +672,17 @@ function handleRegistration(e) {
   }
 }
 
-function handleVerification(e) {
+function handleVerification(e: GoogleAppsScript.Events.SheetsOnFormSubmit) {
   sheetLog("Starting verification");
 
   var ss = SpreadsheetApp.getActive().getSheetByName(
     e.range.getSheet().getName(),
   );
 
+  if (ss == null) {
+    sheetLog("Sheet not found: " + e.range.getSheet().getName());
+    return;
+  }
   var emailData = ss.getRange(e.range.getRow(), 2).getValue();
   var emailData = emailData.toLowerCase();
 
@@ -643,7 +724,7 @@ function handleVerification(e) {
   Logger.log("VER: " + verification.email + " Verified");
 }
 
-function isEmptyResponses_(e) {
+function isEmptyResponses_(e: GoogleAppsScript.Events.SheetsOnFormSubmit) {
   Logger.log(e.values);
   for (var i = 1; i < e.values.length; i++) {
     // first is timestamp
@@ -657,10 +738,15 @@ function isEmptyResponses_(e) {
  * @param {Object} e The event parameter for form submission to a spreadsheet;
  *     see https://developers.domain.com/apps-script/understanding_events
  */
-function onFormSubmit(e) {
+function onFormSubmit(e: GoogleAppsScript.Events.SheetsOnFormSubmit) {
   var responsesName = e.range.getSheet().getName();
 
-  var formId = getFormFromSubmissionEvent(e).getId();
+  const formSubmissionEvent = getFormFromSubmissionEvent(e);
+  if (formSubmissionEvent == null) {
+    sheetLog("Form submission event not found for sheet: " + responsesName);
+    return;
+  }
+  var formId = formSubmissionEvent.getId();
 
   logAllResponses_(e);
 
@@ -687,6 +773,10 @@ function onFormSubmit(e) {
     sheetLog("PA");
 
     var pp = getPaProjectFromFormId(formId);
+    if (pp == null) {
+      sheetLog("No PA project found for form id " + formId);
+      return;
+    }
     handlePeerAss_(e, projectkey, pp.data.pakey);
     return;
   }

@@ -2,13 +2,13 @@
  * Create the assessment form, connects it to the sheet and saves the link to a sheet
  *
  * @param pa
- * @param project
+ * @param projectKey
  * @param questions
  * @param students
  */
 function setUpPeerAssessmentForm_(
   pa: PeerAssessment,
-  project: Row<Project>,
+  projectKey: string,
   questions: string[],
   students: Student[],
 ) {
@@ -16,14 +16,14 @@ function setUpPeerAssessmentForm_(
   let studentNames: string[] = students.map((s) => s.fname + " " + s.lname);
 
   var form = createPeerAssessmentForm(
-    "Peer Assessment Form: " + pa.name + " for " + project.data.key,
+    "Peer Assessment Form: " + pa.name + " for " + projectKey,
     getSettings().domain,
     studentNames,
     questions,
   );
 
   form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
-  savePeerAssessmentLinks(pa.id, project.data.key, form);
+  savePeerAssessmentLinks(pa.id, projectKey, form);
 }
 
 /**

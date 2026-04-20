@@ -15,12 +15,12 @@ function openPA(pa: PeerAssessment) {
   PropertiesService.getScriptProperties().setProperty("PA", pa.id);
 
   for (let project of projects) {
-    let students = getStudents(project.data.key);
+    let students = getStudents(project.key);
     if (students.length > 1) {
-      setUpPeerAssessmentForm_(pa, project, questions, students);
+      setUpPeerAssessmentForm_(pa, project.key, questions, students);
     } else {
       sheetLog(
-        `Not enough students in project: ${project.data.name}. Only ${students.length}!`,
+        `Not enough students in project: ${project.name}. Only ${students.length}!`,
       );
     }
   }
@@ -31,8 +31,8 @@ function openPA(pa: PeerAssessment) {
 }
 
 function renameSheets() {
-  const projects = getProjects();
-  for (let i = projects.length - 1; i >= 0; i--) {
+  const projectKeys = getProjectKeys();
+  for (let i = projectKeys.length - 1; i >= 0; i--) {
     const paid = PropertiesService.getScriptProperties().getProperty("PA");
 
     if (paid == null) {
@@ -40,30 +40,26 @@ function renameSheets() {
       return;
     }
 
-    const pp = getPaProject(paid, projects[i].data.key);
+    const pp = getPaProject(paid, projectKeys[i]);
     if (pp == null) {
-      sheetLog(
-        `No PA project row found for ${paid} and ${projects[i].data.key}.`,
-      );
+      sheetLog(`No PA project row found for ${paid} and ${projectKeys[i]}.`);
       continue;
     }
     let sh = getFormResponseSheet_(pp.data.formId);
-    sh.setName(paid + ":" + projects[i].data.key + " responses");
+    sh.setName(paid + ":" + projectKeys[i] + " responses");
     sh.hideSheet();
 
-    sheetLog(
-      `TRIGGER: Renamed sheet for  ${paid} and ${projects[i].data.key}.`,
-    );
+    sheetLog(`TRIGGER: Renamed sheet for  ${paid} and ${projectKeys[i]}.`);
   }
 }
 
 function setAcceptingResponsesForProjects(paid: string, enabled: boolean) {
-  const projects = getProjects();
-  for (let project of projects) {
-    const pp = getPaProject(paid, project.data.key);
+  const projectKeys = getProjectKeys();
+  for (let projectKey of projectKeys) {
+    const pp = getPaProject(paid, projectKey);
     if (pp == null) {
       sheetLog(
-        `closePA: No PA project row found for ${paid} and ${project.data.key}.`,
+        `closePA: No PA project row found for ${paid} and ${projectKey}.`,
       );
       continue;
     }
@@ -140,12 +136,12 @@ function closePATriggered(event: GoogleAppsScript.Events.AppsScriptEvent) {
 }
 
 function closePA(pa: PeerAssessment) {
-  var projects = getProjects();
-  for (let project of projects) {
-    let pp = getPaProject(pa.id, project.data.key);
+  var projectKeys = getProjectKeys();
+  for (let projectKey of projectKeys) {
+    let pp = getPaProject(pa.id, projectKey);
     if (pp == null) {
       sheetLog(
-        `closePA: No PA project row found for ${pa.id} and ${project.data.key}.`,
+        `closePA: No PA project row found for ${pa.id} and ${projectKey}.`,
       );
       continue;
     }
@@ -216,9 +212,9 @@ function sendReminderToNonSubmissions(pa: PeerAssessment) {
 function getStudentsWhoDidNotSubmit(pa: PeerAssessment) {
   let isDomain = getSettings().domain;
   var studentsWhoDidNotSubmit: Student[] = [];
-  var projects = getProjects();
-  for (let project of projects) {
-    var students = getStudents(project.data.key).filter((s) => {
+  var projectKeys = getProjectKeys();
+  for (let projectKey of projectKeys) {
+    var students = getStudents(projectKey).filter((s) => {
       if (isDomain) {
         return s.verified && !s.submittedpa[pa.id]; // don't send to unverified even in the case of domain users; they did not do the registration
       }
@@ -259,9 +255,9 @@ function sendReminderForConfirmation() {
 
 function notVerifiedStudents(): Student[] {
   let notVerified: Student[] = [];
-  let projects = getProjects();
-  for (let project of projects) {
-    let students = getStudents(project.data.key).filter((s) => !s.verified);
+  let projectKeys = getProjectKeys();
+  for (let projectKey of projectKeys) {
+    let students = getStudents(projectKey).filter((s) => !s.verified);
     for (let student of students) {
       notVerified.push(student);
     }
@@ -271,22 +267,22 @@ function notVerifiedStudents(): Student[] {
 
 function processPAForProject_(
   peerass: PeerAssessment,
-  project: Row<Project>,
+  project: Project,
   newSheetName: string,
   settings: Settings,
   questions: string[],
   isFinal: boolean,
 ) {
-  const paProject = getPaProject(peerass.id, project.data.key);
+  const paProject = getPaProject(peerass.id, project.key);
   if (paProject == null) {
     Browser.msgBox(
-      "Peer assessment has not been opened for project " + project.data.name,
+      "Peer assessment has not been opened for project " + project.name,
     );
     return;
   }
 
   const formId = paProject.data.formId;
-  const projectkey = project.data.key;
+  const projectkey = project.key;
 
   const self = settings.self;
   const weight = settings.weight;
@@ -315,15 +311,15 @@ function processPAForProject_(
     );
   }
 
-  const groupGrade = getGroupGrade(peerass.id, project.data.key);
+  const groupGrade = getGroupGrade(peerass.id, project.key);
   if (groupGrade == null) {
     Browser.msgBox(
-      `Group grade not found for PA ${peerass.name} and project ${project.data.name}.`,
+      `Group grade not found for PA ${peerass.name} and project ${project.name}.`,
     );
     return;
   }
 
-  sh.appendRow(["PROJECT:", project.data.name]);
+  sh.appendRow(["PROJECT:", project.name]);
   sh.appendRow(["Group grade", groupGrade]);
 
   var headingArr = [
@@ -367,7 +363,7 @@ function processPAForProject_(
         Math.round(100 * paResults.scores[email][k]) / 100;
     }
 
-    let values = [email, project.data.key, grade, pen, gradeBefore];
+    let values = [email, project.key, grade, pen, gradeBefore];
     values = values.concat(paResults.scores[email]);
     sh.appendRow(values);
 
@@ -419,7 +415,7 @@ function processPA(pa: PeerAssessment, isFinal: boolean) {
     prepareFinalSheet(pa);
   }
 
-  var projectRows = getProjects();
+  var projects = getProjects();
   var questions = getQuestions();
 
   var sh = SpreadsheetApp.getActive().getSheetByName(newSheetName);
@@ -441,10 +437,10 @@ function processPA(pa: PeerAssessment, isFinal: boolean) {
     settings.self,
   ]);
 
-  for (let projectRow of projectRows) {
+  for (let project of projects) {
     processPAForProject_(
       pa,
-      projectRow,
+      project,
       newSheetName,
       settings,
       questions,

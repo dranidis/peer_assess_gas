@@ -72,9 +72,6 @@ function setupTriggerArguments(
 /**
  * Function which should be called when a trigger runs a function. Returns the stored arguments
  * and deletes the properties entry and trigger if it is not recurring.
- *
- * @param {string} triggerUid - The trigger id
- * @return {*} - The arguments stored for this trigger
  */
 function handleTriggered(triggerUid: string) {
   const scriptProperties = PropertiesService.getScriptProperties();

@@ -182,7 +182,7 @@ function getFormResponses(formId: string): {
 } {
   let form = FormApp.openById(formId);
   let formResponses = form.getResponses();
-  let responses: GoogleAppsScript.Forms.ItemResponse[][] = [];
+  let responses: any[][] = [];
   let emails: string[] = [];
   for (let i = 0; i < formResponses.length; i++) {
     responses[i] = [];

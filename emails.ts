@@ -3,8 +3,6 @@ function sendEmailForConfirmation_(student: Student) {
   let email = student.email;
   let key = student.personalkey;
 
-  let ss = SpreadsheetApp.getActive().getSheetByName("Links");
-
   let link = FormApp.openById(getVerificationFormId()).getPublishedUrl();
 
   let template = HtmlService.createTemplateFromFile("html/confirmation.html");

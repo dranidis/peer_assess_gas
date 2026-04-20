@@ -120,7 +120,7 @@ function getData_<T>(sheetModel: Sheet): T[] {
     return [];
   }
   let values = sp.getDataRange().getValues();
-  let heading = values.shift();
+  values.shift();
   let entries: T[] = [];
   for (let value of values) {
     let entry: any = {};
@@ -431,8 +431,12 @@ function addProject(proj: Project) {
   ss.appendRow([proj.name, proj.key]);
 }
 
-function getProjects() {
+function getProjectRows() {
   return getRows_<Project>(PROJECTS);
+}
+
+function getProjects(): Project[] {
+  return getData_<Project>(PROJECTS);
 }
 
 function isProjectkey(projectkey: string): boolean {
@@ -445,10 +449,9 @@ function isProjectkey(projectkey: string): boolean {
 }
 
 function getProjectKeys(): string[] {
-  return getProjects().map(function (row: Row<Project>) {
-    return row.data.key;
-  });
+  return getProjectRows().map((row) => row.data.key);
 }
+
 /*
 
 Grades per pa, project
@@ -487,9 +490,9 @@ function getPaProjects(): Row<PaProject>[] {
 }
 
 function getPaProject(paid: string, projectkey: string): Row<PaProject> | null {
-  var pps = getPaProjects().filter(function (pp) {
-    return pp.data.pakey == paid && pp.data.projectkey == projectkey;
-  });
+  var pps = getPaProjects().filter(
+    (pp) => pp.data.pakey == paid && pp.data.projectkey == projectkey,
+  );
   if (pps.length == 1) {
     return pps[0];
   }

@@ -4,13 +4,14 @@
  * Also clears all links/ids of PA forms.
  */
 function deletePASheets() {
-  let projects = getProjects();
+  let projectKeys = getProjectKeys();
   let pas = getPAs();
-  for (let i = 0; i < pas.length; i++) {
-    for (let p = 0; p < projects.length; p++) {
-
-      let pp = getPaProject(pas[i].id, projects[p].data.key);
-      if (pp == null || pp.data.formId == "") { continue; }
+  for (let pa of pas) {
+    for (let projectKey of projectKeys) {
+      let pp = getPaProject(pa.id, projectKey);
+      if (pp == null || pp.data.formId == "") {
+        continue;
+      }
 
       let form = FormApp.openById(pp.data.formId);
 

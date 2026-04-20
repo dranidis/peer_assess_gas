@@ -155,7 +155,7 @@ function testgetProjects() {
   preSetupProjects_();
 
   test("getProjects", function (t) {
-    let act = getProjects();
+    let act = getProjectRows();
     t.equal(act.length, testProjects.length, "number is right");
     for (let i = 0; i < act.length; i++) {
       t.equal(act[i].data.name, testProjects[i].name, "getProjects name" + i);
@@ -263,7 +263,7 @@ function testNotVerifiedStudents() {
   preSetupProjects_();
   preSetupStudents_();
 
-  let projs = getProjects();
+  let projs = getProjectRows();
   let notVstuds = notVerifiedStudents();
 
   test("allProjects", function (t) {

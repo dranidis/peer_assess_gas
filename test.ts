@@ -126,7 +126,7 @@ function preSetupPA() {
   }
   ss.getDataRange().offset(1, 0).clearContent();
 
-  for (let i = 0; i < testPAs.length; i++) addPa(testPAs[i]);
+  for (let i = 0; i < testPAs.length; i++) paRepo.add(testPAs[i]);
 }
 
 function preSetupStudents_() {
@@ -137,7 +137,8 @@ function preSetupStudents_() {
   }
   ss.getDataRange().offset(1, 0).clearContent();
 
-  for (let i = 0; i < testStudents.length; i++) addStudent(testStudents[i]);
+  for (let i = 0; i < testStudents.length; i++)
+    studentRepo.add(testStudents[i]);
 }
 
 function preSetupProjects_() {
@@ -148,14 +149,14 @@ function preSetupProjects_() {
   }
   ss.getDataRange().offset(1, 0).clearContent();
 
-  for (let project of testProjects) addProject(project);
+  for (let project of testProjects) projectRepo.add(project);
 }
 
 function testgetProjects() {
   preSetupProjects_();
 
   test("getProjects", function (t) {
-    let act = getProjectRows();
+    let act = projectRepo.getRows();
     t.equal(act.length, testProjects.length, "number is right");
     for (let i = 0; i < act.length; i++) {
       t.equal(act[i].data.name, testProjects[i].name, "getProjects name" + i);
@@ -168,7 +169,7 @@ function testGetProjectKeys() {
   preSetupProjects_();
 
   test("testGetProjectKeys", function (t) {
-    let act = getProjectKeys();
+    let act = projectRepo.getKeys();
     t.equal(act.length, testProjects.length, "length");
 
     for (let i = 0; i < act.length; i++) {
@@ -181,12 +182,12 @@ function testIsProjectkey() {
   preSetupProjects_();
 
   test("isProjectkey", function (t) {
-    let isKey = isProjectkey(testProjects[0].key);
+    let isKey = projectRepo.isValidKey(testProjects[0].key);
     t.ok(isKey, "isProjectkey");
   });
 
   test("isProjectkey", function (t) {
-    let isKey = isProjectkey("projX");
+    let isKey = projectRepo.isValidKey("projX");
     t.notOk(isKey, "not isProjectkey");
   });
 }
@@ -209,7 +210,7 @@ function testGetStudents() {
   preSetupStudents_();
 
   test("getStudents", function (t) {
-    let act = getStudents(testStudents[0].projectkey);
+    let act = studentRepo.findByProject(testStudents[0].projectkey);
     t.equal(act[0].email, testStudents[0].email, "getStudents 0");
     t.equal(act[1].email, testStudents[2].email, "getStudents 2");
   });
@@ -219,14 +220,14 @@ function testGetStudent() {
   preSetupStudents_();
 
   test("getStudent", function (t) {
-    let act = getStudent(testStudents[2].email);
+    let act = studentRepo.findByEmail(testStudents[2].email);
     t.notOk(act == null, "getStudent not null");
     if (act != null)
       t.equal(act.data.email, testStudents[2].email, "getStudent");
   });
 
   test("getStudent", function (t) {
-    let act = getStudent("some@gmail.com");
+    let act = studentRepo.findByEmail("some@gmail.com");
     t.equal(act, null, "getStudent null");
   });
 }
@@ -263,7 +264,7 @@ function testNotVerifiedStudents() {
   preSetupProjects_();
   preSetupStudents_();
 
-  let projs = getProjectRows();
+  let projs = projectRepo.getRows();
   let notVstuds = notVerifiedStudents();
 
   test("allProjects", function (t) {
@@ -312,10 +313,10 @@ function testOpenPA() {
 
   deletePASheets();
 
-  let pas = getPAs();
+  let pas = paRepo.getAll();
   openPA(pas[0]);
 
-  let updatedPa = getPA(pas[0].id);
+  let updatedPa = paRepo.findById(pas[0].id);
 
   test("peer assesment", function (t) {
     t.notOk(updatedPa == null, "pa not null");
@@ -326,10 +327,14 @@ function testOpenPA() {
 }
 
 function testGetPaProjects() {
-  let paProjects = getPaProjects();
+  let paProjects = paProjectRepo.getAll();
   test("pa projects", function (t) {
     t.equal(paProjects.length, 1, " on pa project");
-    t.equal(paProjects[0].data.pakey, getPAs()[0].id, "pa key is correct");
+    t.equal(
+      paProjects[0].data.pakey,
+      paRepo.getAll()[0].id,
+      "pa key is correct",
+    );
     t.equal(
       paProjects[0].data.projectkey,
       testProjects[0].key,

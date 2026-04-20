@@ -8,14 +8,14 @@
  * @param pa
  */
 function openPA(pa: PeerAssessment) {
-  var projects = getProjects();
+  var projects = projectRepo.getAll();
   var questions = getQuestions();
-  sortStudents(); // to make sure students to be assessed appear in the same order
+  studentRepo.sort(); // to make sure students to be assessed appear in the same order
 
   PropertiesService.getScriptProperties().setProperty("PA", pa.id);
 
   for (let project of projects) {
-    let students = getStudents(project.key);
+    let students = studentRepo.findByProject(project.key);
     if (students.length > 1) {
       setUpPeerAssessmentForm_(pa, project.key, questions, students);
     } else {
@@ -27,11 +27,11 @@ function openPA(pa: PeerAssessment) {
 
   createPATriggers_(pa);
 
-  setState(pa, PaState.OPEN);
+  paRepo.setState(pa, PaState.OPEN);
 }
 
 function renameSheets() {
-  const projectKeys = getProjectKeys();
+  const projectKeys = projectRepo.getKeys();
   for (let i = projectKeys.length - 1; i >= 0; i--) {
     const paid = PropertiesService.getScriptProperties().getProperty("PA");
 
@@ -40,7 +40,7 @@ function renameSheets() {
       return;
     }
 
-    const pp = getPaProject(paid, projectKeys[i]);
+    const pp = paProjectRepo.find(paid, projectKeys[i]);
     if (pp == null) {
       sheetLog(`No PA project row found for ${paid} and ${projectKeys[i]}.`);
       continue;
@@ -54,9 +54,9 @@ function renameSheets() {
 }
 
 function setAcceptingResponsesForProjects(paid: string, enabled: boolean) {
-  const projectKeys = getProjectKeys();
+  const projectKeys = projectRepo.getKeys();
   for (let projectKey of projectKeys) {
-    const pp = getPaProject(paid, projectKey);
+    const pp = paProjectRepo.find(paid, projectKey);
     if (pp == null) {
       sheetLog(
         `closePA: No PA project row found for ${paid} and ${projectKey}.`,
@@ -73,7 +73,7 @@ function setNewDeadline(pa: PeerAssessment) {
   deletePATriggers();
   createPATriggers_(pa);
 
-  setState(pa, PaState.OPEN);
+  paRepo.setState(pa, PaState.OPEN);
 
   sendReminderToNonSubmissions(pa);
 }
@@ -117,7 +117,7 @@ function sendReminderToNonSubmissionsTriggered(
   event: GoogleAppsScript.Events.AppsScriptEvent,
 ) {
   const functionArguments = handleTriggered(event.triggerUid);
-  const pa = getPA(functionArguments);
+  const pa = paRepo.findById(functionArguments);
   if (pa == null) {
     sheetLog("No PA found for id " + functionArguments);
     return;
@@ -127,7 +127,7 @@ function sendReminderToNonSubmissionsTriggered(
 
 function closePATriggered(event: GoogleAppsScript.Events.AppsScriptEvent) {
   const functionArguments = handleTriggered(event.triggerUid);
-  const pa = getPA(functionArguments);
+  const pa = paRepo.findById(functionArguments);
   if (pa == null) {
     sheetLog("No PA found for id " + functionArguments);
     return;
@@ -136,9 +136,9 @@ function closePATriggered(event: GoogleAppsScript.Events.AppsScriptEvent) {
 }
 
 function closePA(pa: PeerAssessment) {
-  var projectKeys = getProjectKeys();
+  var projectKeys = projectRepo.getKeys();
   for (let projectKey of projectKeys) {
-    let pp = getPaProject(pa.id, projectKey);
+    let pp = paProjectRepo.find(pa.id, projectKey);
     if (pp == null) {
       sheetLog(
         `closePA: No PA project row found for ${pa.id} and ${projectKey}.`,
@@ -153,7 +153,7 @@ function closePA(pa: PeerAssessment) {
   }
   sendEmailClosedToInstructor_(pa);
 
-  setState(pa, PaState.CLOSED);
+  paRepo.setState(pa, PaState.CLOSED);
 }
 
 function deletePATriggers() {
@@ -212,9 +212,9 @@ function sendReminderToNonSubmissions(pa: PeerAssessment) {
 function getStudentsWhoDidNotSubmit(pa: PeerAssessment) {
   let isDomain = getSettings().domain;
   var studentsWhoDidNotSubmit: Student[] = [];
-  var projectKeys = getProjectKeys();
+  var projectKeys = projectRepo.getKeys();
   for (let projectKey of projectKeys) {
-    var students = getStudents(projectKey).filter((s) => {
+    var students = studentRepo.findByProject(projectKey).filter((s) => {
       if (isDomain) {
         return s.verified && !s.submittedpa[pa.id]; // don't send to unverified even in the case of domain users; they did not do the registration
       }
@@ -235,7 +235,7 @@ function sendReminderForConfirmation() {
   if (confirm) {
     for (let s of notVerified) {
       if (s.personalkey == "") {
-        var student = getStudent(s.email);
+        var student = studentRepo.findByEmail(s.email);
         if (student == null) {
           sheetLog(
             "sendReminderForConfirmation: No student found for email " +
@@ -246,7 +246,7 @@ function sendReminderForConfirmation() {
 
         student.data.personalkey = generateUniqueKey();
         s.personalkey = student.data.personalkey;
-        saveStudent(student);
+        studentRepo.save(student);
       }
       sendEmailForConfirmation_(s);
     }
@@ -255,9 +255,11 @@ function sendReminderForConfirmation() {
 
 function notVerifiedStudents(): Student[] {
   let notVerified: Student[] = [];
-  let projectKeys = getProjectKeys();
+  let projectKeys = projectRepo.getKeys();
   for (let projectKey of projectKeys) {
-    let students = getStudents(projectKey).filter((s) => !s.verified);
+    let students = studentRepo
+      .findByProject(projectKey)
+      .filter((s) => !s.verified);
     for (let student of students) {
       notVerified.push(student);
     }
@@ -273,7 +275,7 @@ function processPAForProject_(
   questions: string[],
   isFinal: boolean,
 ) {
-  const paProject = getPaProject(peerass.id, project.key);
+  const paProject = paProjectRepo.find(peerass.id, project.key);
   if (paProject == null) {
     Browser.msgBox(
       "Peer assessment has not been opened for project " + project.name,
@@ -293,7 +295,7 @@ function processPAForProject_(
   }
 
   const debug = false;
-  const students = getStudents(projectkey);
+  const students = studentRepo.findByProject(projectkey);
   const rawResponses = getFormResponses(formId, settings.domain);
   const responseMap = paScoreService.buildResponseMap(rawResponses);
   const paResults = paScoreService.calcPAScores(
@@ -320,7 +322,7 @@ function processPAForProject_(
     );
   }
 
-  const groupGrade = getGroupGrade(peerass.id, project.key);
+  const groupGrade = paProjectRepo.getGroupGrade(peerass.id, project.key);
   if (groupGrade == null) {
     Browser.msgBox(
       `Group grade not found for PA ${peerass.name} and project ${project.name}.`,
@@ -424,7 +426,7 @@ function processPA(pa: PeerAssessment, isFinal: boolean) {
     prepareFinalSheet(pa);
   }
 
-  var projects = getProjects();
+  var projects = projectRepo.getAll();
   var questions = getQuestions();
 
   var sh = SpreadsheetApp.getActive().getSheetByName(newSheetName);
@@ -457,7 +459,7 @@ function processPA(pa: PeerAssessment, isFinal: boolean) {
     );
   }
   if (isFinal) {
-    setState(pa, PaState.FINALIZED);
+    paRepo.setState(pa, PaState.FINALIZED);
     protectFinal_(pa);
   }
 }
@@ -491,7 +493,7 @@ function announcePA(pa: PeerAssessment) {
     return;
   }
   var values = sh.getDataRange().offset(1, 0).getValues();
-  var students = getAllStudents();
+  var students = studentRepo.getAll();
 
   for (var i = 0; i < values.length; i++) {
     var email = values[i][0];
@@ -515,7 +517,7 @@ function handlePeerAss_(
   projectkey: string,
   pakey: string,
 ) {
-  var pa = getPA(pakey);
+  var pa = paRepo.findById(pakey);
 
   if (pa == null) {
     sheetLog("PA not found for pakey " + pakey);
@@ -543,7 +545,7 @@ function handlePeerAss_(
   sheetLog("email: " + verification.email);
   sheetLog("personalkey: " + verification.personalkey);
 
-  var studentRow = getStudent(verification.email);
+  var studentRow = studentRepo.findByEmail(verification.email);
   if (studentRow == null) {
     // TODO
     // check case personal key exists!!!
@@ -606,7 +608,7 @@ function handlePeerAss_(
   }
 
   // pa passed as an argument
-  setStudentSubmittedPA(studentRow, pakey, true);
+  studentRepo.setSubmittedPA(studentRow, pakey, true);
 
   sheetLog("PA Submitted");
 }
@@ -644,11 +646,11 @@ function handleRegistration(e: GoogleAppsScript.Events.SheetsOnFormSubmit) {
     };
   }
 
-  if (getStudent(reg.email) != null) {
+  if (studentRepo.findByEmail(reg.email) != null) {
     sheetLog("REG: Student email already in students");
     return;
   }
-  if (!isProjectkey(reg.projectkey)) {
+  if (!projectRepo.isValidKey(reg.projectkey)) {
     sheetLog("REG: Project key Not found");
     return;
   }
@@ -659,20 +661,20 @@ function handleRegistration(e: GoogleAppsScript.Events.SheetsOnFormSubmit) {
   // not having the key.
   if (getSettings().domain) {
     // no verification needed
-    addStudent(reg);
-    var student = getStudent(reg.email);
+    studentRepo.add(reg);
+    var student = studentRepo.findByEmail(reg.email);
     if (student == null) {
       sheetLog("handleRegistration: No student found for email " + reg.email);
       return;
     }
-    setStudentVerified(student, true);
+    studentRepo.setVerified(student, true);
     sendEmailForSuccess(student.data);
     Logger.log("VER: " + reg.email + " Verified");
   } else {
     reg.email = "" + reg.email;
     sendEmailForConfirmation_(reg);
 
-    addStudent(reg);
+    studentRepo.add(reg);
     sheetLog("REG: Student " + reg.lname + " added");
   }
 }
@@ -696,7 +698,7 @@ function handleVerification(e: GoogleAppsScript.Events.SheetsOnFormSubmit) {
     personalkey: ss.getRange(e.range.getRow(), 3).getValue(),
   };
 
-  var student = getStudent(verification.email);
+  var student = studentRepo.findByEmail(verification.email);
   if (student == null) {
     sheetLog("VER: Student not found " + verification.email);
     sendEmailWrapper(
@@ -722,7 +724,7 @@ function handleVerification(e: GoogleAppsScript.Events.SheetsOnFormSubmit) {
     );
     return;
   }
-  setStudentVerified(student, true);
+  studentRepo.setVerified(student, true);
 
   sendEmailForSuccess(student.data);
 
@@ -772,12 +774,12 @@ function onFormSubmit(e: GoogleAppsScript.Events.SheetsOnFormSubmit) {
     return;
   }
 
-  var projectkey = getProjectkeyFromFormId(formId);
+  var projectkey = paProjectRepo.getProjectkeyFromFormId(formId);
   sheetLog("Project key: " + projectkey);
   if (projectkey != null) {
     sheetLog("PA");
 
-    var pp = getPaProjectFromFormId(formId);
+    var pp = paProjectRepo.findByFormId(formId);
     if (pp == null) {
       sheetLog("No PA project found for form id " + formId);
       return;

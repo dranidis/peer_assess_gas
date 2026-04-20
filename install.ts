@@ -88,7 +88,7 @@ function installForms() {
 
   var regForm = getRegistrationFormId();
   if (regForm == "" || regForm === "undefined" || regForm == null) {
-    if (getProjects().length == 0) {
+    if (projectRepo.getAll().length == 0) {
       Browser.msgBox(
         'You have to enter the project first in the "PROJECTS" sheet!\n',
       );

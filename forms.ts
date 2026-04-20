@@ -128,7 +128,7 @@ function installRegistrationForm() {
   let item = form.addMultipleChoiceItem();
   item.setTitle("Select your project").setRequired(true);
 
-  item.setChoiceValues(getProjectKeys()).showOtherOption(false);
+  item.setChoiceValues(projectRepo.getKeys()).showOtherOption(false);
 
   ScriptApp.newTrigger("renameSheetReg").timeBased().after(1000).create(); // make less, check name?
 

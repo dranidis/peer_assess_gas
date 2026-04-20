@@ -4,11 +4,11 @@
  * Also clears all links/ids of PA forms.
  */
 function deletePASheets() {
-  let projectKeys = getProjectKeys();
-  let pas = getPAs();
+  let projectKeys = projectRepo.getKeys();
+  let pas = paRepo.getAll();
   for (let pa of pas) {
     for (let projectKey of projectKeys) {
-      let pp = getPaProject(pa.id, projectKey);
+      let pp = paProjectRepo.find(pa.id, projectKey);
       if (pp == null || pp.data.formId == "") {
         continue;
       }
@@ -22,7 +22,7 @@ function deletePASheets() {
       DriveApp.getFileById(form.getId()).setTrashed(true);
     }
   }
-  deletePALinks();
+  paProjectRepo.deleteLinks();
 }
 
 function deleteRegVerSheets() {

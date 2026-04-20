@@ -805,7 +805,111 @@ const gasLogger: ILogger = {
   },
 };
 
+// ── GAS Adapters: Repository implementations ───────────────────────────────────
+
+class SheetStudentRepository implements IStudentRepository {
+  getAll(): Student[] {
+    return getAllStudents();
+  }
+  findByEmail(email: string): Row<Student> | null {
+    return getStudent(email);
+  }
+  findByProject(projectkey: string): Student[] {
+    return getStudents(projectkey);
+  }
+  add(student: Student): void {
+    addStudent(student);
+  }
+  save(student: Row<Student>): void {
+    saveStudent(student);
+  }
+  setVerified(student: Row<Student>, enabled: boolean): void {
+    setStudentVerified(student, enabled);
+  }
+  setSubmittedPA(student: Row<Student>, pakey: string, enabled: boolean): void {
+    setStudentSubmittedPA(student, pakey, enabled);
+  }
+  getHeading(): string[] {
+    return studentsHeading();
+  }
+  addPAColumn(pakey: string): number {
+    return addColumnToStudent(pakey);
+  }
+  sort(): void {
+    sortStudents();
+  }
+}
+
+class SheetProjectRepository implements IProjectRepository {
+  getAll(): Project[] {
+    return getProjects();
+  }
+  getRows(): Row<Project>[] {
+    return getProjectRows();
+  }
+  add(project: Project): void {
+    addProject(project);
+  }
+  isValidKey(key: string): boolean {
+    return isProjectkey(key);
+  }
+  getKeys(): string[] {
+    return getProjectKeys();
+  }
+}
+
+class SheetPaRepository implements IPaRepository {
+  getAll(): PeerAssessment[] {
+    return getPAs();
+  }
+  findById(id: string): PeerAssessment | null {
+    return getPA(id);
+  }
+  add(pa: PeerAssessment): void {
+    addPa(pa);
+  }
+  setState(pa: PeerAssessment, newState: PaState): void {
+    setState(pa, newState);
+  }
+}
+
+class SheetPaProjectRepository implements IPaProjectRepository {
+  getAll(): Row<PaProject>[] {
+    return getPaProjects();
+  }
+  find(paId: string, projectkey: string): Row<PaProject> | null {
+    return getPaProject(paId, projectkey);
+  }
+  findByFormId(formId: string): Row<PaProject> | null {
+    return getPaProjectFromFormId(formId);
+  }
+  getGroupGrade(paId: string, projectkey: string): number | null {
+    return getGroupGrade(paId, projectkey);
+  }
+  getProjectkeyFromFormId(formId: string): string | null {
+    return getProjectkeyFromFormId(formId);
+  }
+  add(paId: string, projectkey: string): Row<PaProject> | null {
+    return addPaProject(paId, projectkey);
+  }
+  saveLinks(
+    paId: string,
+    projectkey: string,
+    form: GoogleAppsScript.Forms.Form,
+  ): void {
+    savePeerAssessmentLinks(paId, projectkey, form);
+  }
+  deleteLinks(): void {
+    deletePALinks();
+  }
+}
+
 // ── Composition Root ───────────────────────────────────────────────────────────
 
 /** Shared PaScoreService instance wired with the GAS logger adapter. */
 const paScoreService = new PaScoreService(gasLogger);
+
+const studentRepo: IStudentRepository = new SheetStudentRepository();
+const projectRepo: IProjectRepository = new SheetProjectRepository();
+const paRepo: IPaRepository = new SheetPaRepository();
+const paProjectRepo: IPaProjectRepository = new SheetPaProjectRepository();

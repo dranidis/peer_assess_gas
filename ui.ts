@@ -96,7 +96,7 @@ function installFormsItem() {
 }
 
 function openPAitem() {
-  let pas = getPAs();
+  let pas = paRepo.getAll();
   let pa;
   if (pas.length == 1) pa = pas[0];
   else pa = getPAselected(pas);
@@ -134,7 +134,7 @@ function openPAitem() {
  currently fixed to first row in Peer Assessments
 */
 function updateDeadlineMenuItem() {
-  var pas = getPAs();
+  var pas = paRepo.getAll();
   var pa;
   if (pas.length == 1) pa = pas[0];
   else pa = getPAselected(pas);
@@ -166,7 +166,7 @@ function updateDeadlineMenuItem() {
 }
 
 function calculateItem() {
-  let pas = getPAs();
+  let pas = paRepo.getAll();
   let pa;
   if (pas.length == 1) pa = pas[0];
   else pa = getPAselected(pas);
@@ -184,7 +184,7 @@ function calculateItem() {
 }
 
 function finalizeItem() {
-  let pas = getPAs();
+  let pas = paRepo.getAll();
   let pa;
   if (pas.length == 1) pa = pas[0];
   else pa = getPAselected(pas);
@@ -198,7 +198,7 @@ function finalizeItem() {
 }
 
 function announceItem() {
-  let pas = getPAs();
+  let pas = paRepo.getAll();
   let pa;
   if (pas.length == 1) pa = pas[0];
   else pa = getPAselected(pas);
@@ -222,7 +222,7 @@ function showRegItem() {
 }
 
 function menuItem2() {
-  let pas = getPAs();
+  let pas = paRepo.getAll();
   let pa;
   if (pas.length == 1) pa = pas[0];
   else pa = getPAselected(pas);

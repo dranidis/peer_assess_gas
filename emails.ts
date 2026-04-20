@@ -64,7 +64,7 @@ function sendReminderPA_(pa: PeerAssessment, student: Student) {
   var sp = SpreadsheetApp.getActive();
   var deadline = new Date(pa.deadline);
 
-  let pp = getPaProject(pa.id, student.projectkey);
+  let pp = paProjectRepo.find(pa.id, student.projectkey);
   if (pp == null) {
     sheetLog(
       `sendReminderPA_: No PA project row found for ${pa.id} and ${student.projectkey}.`,

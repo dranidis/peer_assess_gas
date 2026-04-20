@@ -769,15 +769,12 @@ function prepareFinalSheet(pa: PeerAssessment) {
  * to plain data (strings / string arrays).
  *
  * This is the infrastructure boundary: all FormApp API calls for response
- * retrieval are isolated here so that paalg.ts remains free of Google API calls.
+ * retrieval are isolated here so that PaScoreService remains free of Google API calls.
  *
  * @param formId  The Google Form ID
  * @param domain  true to read respondent email from session; false when email is a text field
  */
-function getFormResponses(
-  formId: string,
-  domain: boolean,
-): { emails: string[]; responses: Array<Array<string | string[]>> } {
+function getFormResponses(formId: string, domain: boolean): FormResponseData {
   const form = FormApp.openById(formId);
   const formResponses = form.getResponses();
   const responses: Array<Array<string | string[]>> = [];
@@ -798,3 +795,17 @@ function getFormResponses(
 
   return { emails, responses };
 }
+
+// ── GAS Adapter: ILogger ───────────────────────────────────────────────────────
+
+/** Adapter that routes ILogger calls to the GAS Logger service. */
+const gasLogger: ILogger = {
+  log(message: string): void {
+    Logger.log(message);
+  },
+};
+
+// ── Composition Root ───────────────────────────────────────────────────────────
+
+/** Shared PaScoreService instance wired with the GAS logger adapter. */
+const paScoreService = new PaScoreService(gasLogger);

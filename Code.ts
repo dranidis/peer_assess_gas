@@ -295,8 +295,8 @@ function processPAForProject_(
   const debug = false;
   const students = getStudents(projectkey);
   const rawResponses = getFormResponses(formId, settings.domain);
-  const responseMap = buildResponseMap(rawResponses);
-  const paResults = calcPAScores(
+  const responseMap = paScoreService.buildResponseMap(rawResponses);
+  const paResults = paScoreService.calcPAScores(
     responseMap,
     students,
     questions,
@@ -348,7 +348,7 @@ function processPAForProject_(
     var email = students[i].email;
     var pen = paResults.penalty[email] ? 1 * penalty : 0;
 
-    var gradeBefore = calculateGrade(
+    var gradeBefore = paScoreService.calculateGrade(
       groupGrade,
       Number(paResults.scores[email][0]),
       weight,
@@ -356,7 +356,7 @@ function processPAForProject_(
     );
     gradeBefore = gradeBefore > 100 ? 100 : gradeBefore;
 
-    var grade = calculateGrade(
+    var grade = paScoreService.calculateGrade(
       groupGrade,
       Number(paResults.scores[email][0]),
       weight,

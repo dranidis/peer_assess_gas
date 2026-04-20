@@ -233,9 +233,9 @@ function testGetStudent() {
 
 function testCalculateGrade() {
   test("calculateGrade", function (t) {
-    let grade = calculateGrade(80, 0.41, 0.5, 0.1);
+    let grade = paScoreService.calculateGrade(80, 0.41, 0.5, 0.1);
     t.equal(grade, 50.76, "calculateGrade a");
-    grade = calculateGrade(70, 1.05, 0.7, 0.2);
+    grade = paScoreService.calculateGrade(70, 1.05, 0.7, 0.2);
     t.equal(grade, 57.96, "calculateGrade b");
   });
 }

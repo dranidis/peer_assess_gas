@@ -293,9 +293,18 @@ function processPAForProject_(
   }
 
   const debug = false;
-  const paResults = getPAresults(formId, projectkey, self, debug);
-
   const students = getStudents(projectkey);
+  const rawResponses = getFormResponses(formId, settings.domain);
+  const responseMap = buildResponseMap(rawResponses);
+  const paResults = calcPAScores(
+    responseMap,
+    students,
+    questions,
+    self,
+    settings.domain,
+    debug,
+  );
+
   const queLen = questions.length;
 
   const sh = SpreadsheetApp.getActive().getSheetByName(newSheetName);

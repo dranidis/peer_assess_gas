@@ -1,99 +1,132 @@
 /**
+ * Builds a response map (email → item responses) from pre-fetched form data.
  *
- * Calculates the PA results for each question, plus the average.
- * Non-submissions are treated with same grades for all students
+ * Non-domain forms include email as the first text response field;
+ * domain forms capture respondent email from the submissions metadata.
  *
- * @param formId
- * @param projectkey
- * @param self
- * @param debug
+ * @param emailResponses  Raw form data returned by getFormResponses()
  */
-function getPAresults(
-  formId: string,
-  projectkey: string,
-  self: boolean,
-  debug: boolean,
-) {
-  // offset 2: when no google accounts are used the form contains extra  2 responses: email and personalkey
-  let offset = 2;
-  if (getSettings().domain) {
-    offset = 0;
+function buildResponseMap(emailResponses: {
+  emails: string[];
+  responses: Array<Array<string | string[]>>;
+}): { [email: string]: Array<string | string[]> } {
+  const { emails, responses } = emailResponses;
+  const responseMap: { [email: string]: Array<string | string[]> } = {};
+
+  for (let i = 0; i < responses.length; i++) {
+    let email: string;
+    if (emails[i] === "") {
+      email = responses[i][0] as string;
+      Logger.log("buildResponseMap email: " + email);
+    } else {
+      email = emails[i];
+      Logger.log("buildResponseMap email (google): " + email);
+    }
+    responseMap[email] = responses[i];
   }
 
-  let responseMap = getPAResponses_(formId);
-  let questions = getQuestions();
-  //  Logger.log(questions);
-  let students = getStudents(projectkey);
+  return responseMap;
+}
 
-  var debugLog = function () {
+/**
+ * Calculates the PA results for each question, plus the average.
+ * Non-submissions are treated with the same grades for all students.
+ *
+ * @param responseMap  Response map built by buildResponseMap()
+ * @param students     Students in the project group
+ * @param questions    PA questions
+ * @param self         Whether to include self-assessment in the score
+ * @param domain       Whether Google Domain accounts are used (affects form field offset)
+ * @param debug        Enable debug logging
+ */
+function calcPAScores(
+  responseMap: { [email: string]: Array<string | string[]> },
+  students: Student[],
+  questions: string[],
+  self: boolean,
+  domain: boolean,
+  debug: boolean,
+): {
+  scores: { [email: string]: number[] };
+  penalty: { [email: string]: boolean };
+} {
+  // offset 2: non-domain forms contain 2 extra fields before the grid (email, personalkey)
+  const offset = domain ? 0 : 2;
+
+  // Work on a shallow clone so we don't mutate the caller's map
+  const rm: { [email: string]: Array<string | string[]> } = Object.assign(
+    {},
+    responseMap,
+  );
+
+  const debugLog = () => {
     if (debug) {
-      for (let student of students) {
-        Logger.log(
-          "getPAresults:" + student.email + ":" + responseMap[student.email],
-        );
+      for (const student of students) {
+        Logger.log("calcPAScores: " + student.email + ":" + rm[student.email]);
       }
     }
   };
 
   debugLog();
-  var penalty: { [email: string]: boolean } = {};
+
+  const penalty: { [email: string]: boolean } = {};
 
   if (!self) {
-    // dealing with non-submsissions
+    // Fill in default neutral scores for non-submitters
     for (let i = 0; i < students.length; i++) {
       const e = students[i].email;
       penalty[e] = false;
-
-      if (responseMap[e] == null) {
+      if (rm[e] == null) {
         penalty[e] = true;
-        responseMap[e] = [];
+        rm[e] = [];
         for (let q = 0; q < questions.length; q++) {
-          responseMap[e][offset + q] = [];
+          const row: string[] = [];
           for (let s = 0; s < students.length; s++) {
-            responseMap[e][offset + q][s] = 3; // for non submissions we set all grades to 3
+            row[s] = "3"; // neutral score for non-submissions
           }
+          rm[e][offset + q] = row;
         }
       }
     }
 
     debugLog();
 
-    // not taking into account self assessment
+    // Zero out self-assessment scores
     for (let i = 0; i < students.length; i++) {
-      let e = students[i].email;
-      if (responseMap[e] != null) {
+      const e = students[i].email;
+      if (rm[e] != null) {
         for (let q = 0; q < questions.length; q++) {
-          responseMap[e][offset + q][i] = 0;
+          (rm[e][offset + q] as string[])[i] = "0";
         }
       }
     }
   }
 
   let submitted = 0;
-  // normalize values
+  // Normalize values row-by-row (per reviewer, per question)
   for (let i = 0; i < students.length; i++) {
-    let e = students[i].email;
-    if (responseMap[e] != null) {
+    const e = students[i].email;
+    if (rm[e] != null) {
       submitted++;
-
       for (let q = 0; q < questions.length; q++) {
         let sum = 0.0;
-        for (let s = 0; s < responseMap[e][offset + q].length; s++) {
-          sum += Number(responseMap[e][offset + q][s]);
+        const row = rm[e][offset + q] as string[];
+        for (let s = 0; s < row.length; s++) {
+          sum += Number(row[s]);
         }
-        for (let s = 0; s < responseMap[e][offset + q].length; s++) {
-          responseMap[e][offset + q][s] =
-            Number(responseMap[e][offset + q][s]) / sum;
+        for (let s = 0; s < row.length; s++) {
+          row[s] = String(Number(row[s]) / sum);
         }
       }
     }
   }
 
-  let factor = students.length / submitted;
+  const factor = students.length / submitted;
 
   debugLog();
 
-  let score: { [email: string]: number[] } = {};
+  // Aggregate scores per student, per question
+  const score: { [email: string]: number[] } = {};
   for (let i = 0; i < students.length; i++) {
     const email = students[i].email;
     score[email] = [];
@@ -101,41 +134,40 @@ function getPAresults(
       let sum = 0.0;
       for (let j = 0; j < students.length; j++) {
         const r = students[j].email;
-        if (responseMap[r] != null) {
-          sum += Number(responseMap[r][offset + q][i]);
+        if (rm[r] != null) {
+          sum += Number((rm[r][offset + q] as string[])[i]);
         }
       }
       score[email][q] = sum * factor;
     }
   }
 
-  // calculating avg
+  // Compute per-student average and prepend it as the first element
   for (let i = 0; i < students.length; i++) {
-    let e = students[i].email;
+    const e = students[i].email;
     let avg = 0;
     for (let q = 0; q < score[e].length; q++) {
       avg += score[e][q];
     }
     avg /= score[e].length;
-    // add average as first number
     score[e].unshift(avg);
     if (debug) {
       Logger.log("AVG " + avg);
       Logger.log(score[e]);
     }
   }
-  return { scores: score, penalty: penalty };
+
+  return { scores: score, penalty };
 }
 
 /**
- * Returns the final adjusted grade
- * taking under consideration the pa score
- * the weight percentage and the penalty.
+ * Returns the final adjusted grade taking into account the PA score,
+ * the weight percentage, and the non-submission penalty.
  *
- * @param grade
- * @param pascore
- * @param weight
- * @param penalty
+ * @param grade   Group grade (baseline)
+ * @param pascore Peer assessment score (~1.0 = average contributor)
+ * @param weight  Fraction of the grade affected by PA (0–1)
+ * @param penalty Non-submission penalty fraction
  */
 function calculateGrade(
   grade: number,
@@ -148,56 +180,4 @@ function calculateGrade(
   let pagrade = adjgrade * pascore + fixedgrade;
   pagrade = pagrade - pagrade * penalty;
   return pagrade;
-}
-
-function getPAResponses_(formId: string): { [email: string]: any[] } {
-  const emailresponses = getFormResponses(formId);
-  const emails = emailresponses.emails;
-  const responses = emailresponses.responses;
-
-  const responseMap: { [email: string]: any[] } = {};
-  for (let i = 0; i < responses.length; i++) {
-    if (emails[i] == "") {
-      const email: string = responses[i][0].getResponse();
-      Logger.log("getPAResponses_ email:" + email);
-      responseMap[email] = [];
-      for (let j = 0; j < responses[i].length; j++) {
-        responseMap[email][j] = responses[i][j].getResponse();
-      }
-    } else {
-      const email: string = emails[i];
-      Logger.log("getPAResponses_ email (google):" + email);
-      responseMap[email] = [];
-      for (let j = 0; j < responses[i].length; j++) {
-        responseMap[email][j] = responses[i][j].getResponse();
-      }
-    }
-  }
-  return responseMap;
-}
-
-function getFormResponses(formId: string): {
-  emails: string[];
-  responses: any[][];
-} {
-  let form = FormApp.openById(formId);
-  let formResponses = form.getResponses();
-  let responses: any[][] = [];
-  let emails: string[] = [];
-  for (let i = 0; i < formResponses.length; i++) {
-    responses[i] = [];
-    let formResponse = formResponses[i];
-    let email = "";
-    if (getSettings().domain) {
-      email = formResponse.getRespondentEmail();
-      Logger.log("getFormResponses Respondents email: " + email);
-    }
-    let itemResponses = formResponse.getItemResponses();
-    for (let j = 0; j < itemResponses.length; j++) {
-      responses[i][j] = itemResponses[j];
-    }
-    Logger.log("getFormResponses responses: " + responses[i]);
-    emails[i] = email;
-  }
-  return { emails: emails, responses: responses };
 }

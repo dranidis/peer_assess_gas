@@ -12,7 +12,12 @@ class PaService {
     private readonly paProjectRepo: IPaProjectRepository,
     private readonly emailService: EmailService,
     private readonly formAdapter: IFormAdapter,
+    private readonly logger: ILogger,
   ) {}
+
+  private log(message: string): void {
+    this.logger.log(message);
+  }
 
   // ── PA lifecycle ─────────────────────────────────────────────────────────────
 
@@ -50,7 +55,7 @@ class PaService {
     for (const projectKey of projectKeys) {
       const pp = this.paProjectRepo.find(paId, projectKey);
       if (pp == null) {
-        sheetLog(
+        this.log(
           `setFormsAcceptingResponses: No PA project row found for ${paId} and ${projectKey}.`,
         );
         continue;
@@ -86,7 +91,7 @@ class PaService {
     for (const student of students) {
       const pp = this.paProjectRepo.find(pa.id, student.projectkey);
       if (pp == null) {
-        sheetLog(
+        this.log(
           `sendPaReminders: No PA project found for ${pa.id} and ${student.projectkey}.`,
         );
         continue;
@@ -123,7 +128,7 @@ class PaService {
       if (student.personalkey === "") {
         const row = this.studentRepo.findByEmail(student.email);
         if (row == null) {
-          sheetLog(
+          this.log(
             "sendConfirmationReminders: No student found for email " +
               student.email,
           );
@@ -154,7 +159,7 @@ class PaService {
   ): void {
     const studentRow = this.studentRepo.findByEmail(email);
     if (studentRow == null) {
-      sheetLog("Student not found " + email);
+      this.log("Student not found " + email);
       if (isDomain) {
         this.emailService.sendNotRegistered(email);
       } else {
@@ -164,7 +169,7 @@ class PaService {
     }
 
     if (!isDomain && studentRow.data.personalkey !== personalkey) {
-      sheetLog("Wrong key for student " + JSON.stringify(studentRow));
+      this.log("Wrong key for student " + JSON.stringify(studentRow));
       this.emailService.sendWrongKeyPA(
         email,
         studentRow.data.personalkey,
@@ -174,7 +179,7 @@ class PaService {
     }
 
     if (studentRow.data.projectkey !== projectkey) {
-      sheetLog(
+      this.log(
         "Student not in project: '" +
           studentRow.data.projectkey +
           "' '" +
@@ -186,7 +191,7 @@ class PaService {
 
     this.emailService.sendSubmission(studentRow.data, pa.name, editUrl);
     this.studentRepo.setSubmittedPA(studentRow, pakey, true);
-    sheetLog("PA Submitted");
+    this.log("PA Submitted");
   }
 
   /**
@@ -203,7 +208,7 @@ class PaService {
       this.studentRepo.add(student);
       const row = this.studentRepo.findByEmail(student.email);
       if (row == null) {
-        sheetLog(
+        this.log(
           "registerStudent: No student found after insert for email " +
             student.email,
         );
@@ -215,7 +220,7 @@ class PaService {
     } else {
       this.emailService.sendConfirmation(student, verificationUrl);
       this.studentRepo.add(student);
-      sheetLog("REG: Student " + student.lname + " added");
+      this.log("REG: Student " + student.lname + " added");
     }
   }
 
@@ -226,18 +231,18 @@ class PaService {
   verifyStudent(email: string, personalkey: string): void {
     const student = this.studentRepo.findByEmail(email);
     if (student == null) {
-      sheetLog("VER: Student not found " + email);
+      this.log("VER: Student not found " + email);
       this.emailService.sendVerificationEmailNotFound(email);
       return;
     }
 
     if (student.data.verified) {
-      sheetLog("VER: Student " + email + " already verified");
+      this.log("VER: Student " + email + " already verified");
       return;
     }
 
     if (student.data.personalkey !== personalkey) {
-      sheetLog("VER: Wrong key for student " + JSON.stringify(student));
+      this.log("VER: Wrong key for student " + JSON.stringify(student));
       this.emailService.sendWrongKeyVerification(email);
       return;
     }

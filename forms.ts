@@ -135,7 +135,7 @@ function installRegistrationForm() {
 
   item.setChoiceValues(projectRepo.getKeys()).showOtherOption(false);
 
-  ScriptApp.newTrigger("renameSheetReg").timeBased().after(1000).create(); // make less, check name?
+  ScriptApp.newTrigger(renameSheetReg.name).timeBased().after(1000).create(); // make less, check name?
 
   setRegistrationLink(form);
 }
@@ -182,5 +182,5 @@ function installVerificationForm() {
   linksSheet.getRange("C3").setValue(form.getId());
   linksSheet.getRange("A3").setValue("Verification");
 
-  ScriptApp.newTrigger("renameSheetVer").timeBased().after(1000).create(); // make less, check name?
+  ScriptApp.newTrigger(renameSheetVer.name).timeBased().after(1000).create(); // make less, check name?
 }

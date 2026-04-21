@@ -138,7 +138,7 @@ function installFormSubmitTrigger() {
   for (var i = 0; i < triggers.length; i++) {
     ScriptApp.deleteTrigger(triggers[i]);
   }
-  ScriptApp.newTrigger("onFormSubmit")
+  ScriptApp.newTrigger(onFormSubmit.name)
     .forSpreadsheet(ss)
     .onFormSubmit()
     .create();

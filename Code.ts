@@ -32,9 +32,9 @@ function openPA(pa: PeerAssessment) {
 
 function renameSheets() {
   const projectKeys = projectRepo.getKeys();
-  for (let i = projectKeys.length - 1; i >= 0; i--) {
-    const paid = PropertiesService.getScriptProperties().getProperty("PA");
+  const paid = PropertiesService.getScriptProperties().getProperty("PA");
 
+  for (let i = projectKeys.length - 1; i >= 0; i--) {
     if (paid == null) {
       sheetLog("No PA found in script properties");
       return;
@@ -70,14 +70,14 @@ function setNewDeadline(pa: PeerAssessment) {
 function createPATriggers_(pa: PeerAssessment) {
   const deadline = pa.deadline;
 
-  const triggerClose = ScriptApp.newTrigger("closePATriggered")
+  const triggerClose = ScriptApp.newTrigger(closePATriggered.name)
     .timeBased()
     .at(deadline)
     .create();
   setupTriggerArguments(triggerClose, [pa.id], false);
 
   const triggerNow = ScriptApp.newTrigger(
-    "sendReminderToNonSubmissionsTriggered",
+    sendReminderToNonSubmissionsTriggered.name,
   )
     .timeBased()
     .after(5000)
@@ -87,19 +87,23 @@ function createPATriggers_(pa: PeerAssessment) {
   const time1 = getReminderTime(deadline, 1);
   const time2 = getReminderTime(deadline, 2);
 
-  const trigger1 = ScriptApp.newTrigger("sendReminderToNonSubmissionsTriggered")
+  const trigger1 = ScriptApp.newTrigger(
+    sendReminderToNonSubmissionsTriggered.name,
+  )
     .timeBased()
     .at(time1)
     .create();
   setupTriggerArguments(trigger1, [pa.id], false);
 
-  const trigger2 = ScriptApp.newTrigger("sendReminderToNonSubmissionsTriggered")
+  const trigger2 = ScriptApp.newTrigger(
+    sendReminderToNonSubmissionsTriggered.name,
+  )
     .timeBased()
     .at(time2)
     .create();
   setupTriggerArguments(trigger2, [pa.id], false);
 
-  ScriptApp.newTrigger("renameSheets").timeBased().after(10000).create(); // make less, check name?
+  ScriptApp.newTrigger(renameSheets.name).timeBased().after(10000).create(); // make less, check name?
 }
 
 function sendReminderToNonSubmissionsTriggered(
@@ -138,11 +142,11 @@ function deletePATriggers() {
   for (var i = 0; i < triggers.length; i++) {
     if (
       triggers[i].getHandlerFunction() ==
-      "sendReminderToNonSubmissionsTriggered"
+      sendReminderToNonSubmissionsTriggered.name
     ) {
       ScriptApp.deleteTrigger(triggers[i]);
     }
-    if (triggers[i].getHandlerFunction() == "closePATriggered") {
+    if (triggers[i].getHandlerFunction() == closePATriggered.name) {
       ScriptApp.deleteTrigger(triggers[i]);
     }
   }

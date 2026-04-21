@@ -131,7 +131,7 @@ function deleteTrigger(trigger: GoogleAppsScript.Script.Trigger) {
 }
 
 function example() {
-  var trigger = ScriptApp.newTrigger("exampleTriggerFunction")
+  var trigger = ScriptApp.newTrigger(exampleTriggerFunction.name)
     .timeBased()
     .after(5 * 1000)
     .create();

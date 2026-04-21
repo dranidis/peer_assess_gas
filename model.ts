@@ -806,6 +806,13 @@ const gasLogger: ILogger = {
   },
 };
 
+/** Adapter that routes ILogger calls to the sheet log. */
+const sheetLogger: ILogger = {
+  log(message: string): void {
+    sheetLog(message);
+  },
+};
+
 // ── GAS Adapters: Repository implementations ───────────────────────────────────
 
 class SheetStudentRepository implements IStudentRepository {
@@ -927,4 +934,5 @@ const paService = new PaService(
   paProjectRepo,
   emailService,
   formAdapter,
+  sheetLogger,
 );

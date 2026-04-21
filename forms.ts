@@ -23,7 +23,12 @@ function setUpPeerAssessmentForm_(
   );
 
   form.setDestination(FormApp.DestinationType.SPREADSHEET, ss.getId());
-  savePeerAssessmentLinks(pa.id, projectKey, form);
+  paProjectRepo.saveLinks(
+    pa.id,
+    projectKey,
+    form.getId(),
+    form.getPublishedUrl(),
+  );
 }
 
 /**

@@ -1,167 +1,173 @@
-function sendEmailForConfirmation_(student: Student) {
-  let name = student.fname;
-  let email = student.email;
-  let key = student.personalkey;
+// ── Email Service ──────────────────────────────────────────────────────────────
+//
+// Sends all PA-related emails.
+// Has no dependency on Google APIs: all GAS calls are behind IEmailAdapter.
 
-  let link = FormApp.openById(getVerificationFormId()).getPublishedUrl();
+class EmailService {
+  constructor(private readonly adapter: IEmailAdapter) {}
 
-  let template = HtmlService.createTemplateFromFile("html/confirmation.html");
-  template.name = name;
-  template.link = link;
-  template.key = key;
+  private sendTemplate(
+    templateFile: string,
+    vars: Record<string, unknown>,
+    to: string,
+    subject: string,
+    plainText: string,
+  ): void {
+    const html = this.adapter.renderTemplate(templateFile, vars);
+    this.adapter.send(to, subject, plainText, { htmlBody: html });
+  }
 
-  //  Logger.log(template.evaluate().getContent())
-
-  sendEmailWrapper(
-    email,
-    "PA: Confirm your registration",
-    "In order to complete your registration please visit this " + link + '"',
-    {
-      // body
-      htmlBody: template.evaluate().getContent(), // advanced options
-    },
-  );
-}
-
-function sendSubmissionMail(student: Student, paname: string, editURL: string) {
-  var template = HtmlService.createTemplateFromFile("html/pasubmission.html");
-  template.email = student.email;
-  template.name = student.fname;
-  template.link = editURL;
-  template.pa = paname;
-  template.project = student.projectkey;
-
-  //  Logger.log(template.evaluate().getContent())
-  sendEmailWrapper(
-    student.email,
-    "PA: Successful submission of peer assessment",
-    "Congratulations! You have successfully completed your peer assessment",
-    {
-      // body
-      htmlBody: template.evaluate().getContent(), // advanced options
-    },
-  );
-}
-
-function sendEmailForSuccess(student: Student) {
-  var ss = SpreadsheetApp.getActive().getSheetByName("Links");
-  var template = HtmlService.createTemplateFromFile("html/successful.html");
-  template.name = student.fname;
-  template.key = student.personalkey;
-  sendEmailWrapper(
-    student.email,
-    "PA: Successful registration",
-    "Congratulations! You have successfully completed your registration.\nKeep your " +
-      student.personalkey +
-      " for completing peer assessments.",
-    {
-      htmlBody: template.evaluate().getContent(),
-    },
-  );
-}
-
-function sendReminderPA_(pa: PeerAssessment, student: Student) {
-  var sp = SpreadsheetApp.getActive();
-  var deadline = new Date(pa.deadline);
-
-  let pp = paProjectRepo.find(pa.id, student.projectkey);
-  if (pp == null) {
-    sheetLog(
-      `sendReminderPA_: No PA project row found for ${pa.id} and ${student.projectkey}.`,
+  /** Sent to a newly-registered student who needs to confirm their email. */
+  sendConfirmation(student: Student, verificationUrl: string): void {
+    this.sendTemplate(
+      "html/confirmation.html",
+      { name: student.fname, link: verificationUrl, key: student.personalkey },
+      student.email,
+      "PA: Confirm your registration",
+      "In order to complete your registration please visit this " +
+        verificationUrl,
     );
-    return;
   }
 
-  let formId = pp.data.formId;
-  let link = FormApp.openById(formId).getPublishedUrl();
-  let email = student.email;
-
-  let template = HtmlService.createTemplateFromFile("html/reminder.html");
-  template.name = student.fname;
-  template.link = link;
-  template.key = "";
-  template.deadline = deadline;
-  template.paname = pa.name;
-
-  if (!getSettings().domain) {
-    template.key = "Your personal key is: " + student.personalkey + ". ";
-  }
-
-  //  Logger.log(template.evaluate().getContent())
-
-  sendEmailWrapper(
-    email,
-    "PA: Reminder for peer assessment: " + pa.name,
-    "This is a reminder that you need to complete your peer assessment. Note that there is a penalty for not completing the peer assessment.",
-    {
-      // body
-      htmlBody: template.evaluate().getContent(), // advanced options
-    },
-  );
-}
-
-function sendEmailResults(
-  pa: PeerAssessment,
-  student: Student,
-  grade: number,
-  pascore: number,
-) {
-  var settings = getSettings();
-
-  var template = HtmlService.createTemplateFromFile("html/announce.html");
-  template.name = student.fname;
-  template.pa = pa.name;
-
-  if (settings.mailpa) {
-    template.pascore = "Your peer assessment score is " + pascore + ".";
-  } else {
-    template.pascore = "";
-  }
-
-  if (settings.mailgrade) {
-    template.grade = "Your peer adjusted grade is " + grade + ".";
-  } else {
-    template.grade = "";
-  }
-
-  //  Logger.log(template.evaluate().getContent())
-
-  sendEmailWrapper(
-    student.email,
-    "PA: Results for peer assessment: " + pa.name,
-    "",
-    {
-      // body
-      htmlBody: template.evaluate().getContent(), // advanced options
-    },
-  );
-}
-
-function sendEmailWrapper(
-  recipient: string,
-  subject: string,
-  body: string,
-  options?: GoogleAppsScript.Gmail.GmailAdvancedOptions,
-) {
-  if (testMode) {
-    Logger.log("TEST MODE ON; Mocking emails");
-    sheetLog("MOCKING EMAIL SENT (with options)");
-    sheetLog(
-      "TO: " +
-        recipient +
-        "\nSUBJECT: " +
-        subject +
-        "\nBODY: " +
-        body +
-        "\nOPTIONS: " +
-        JSON.stringify(options),
+  /** Sent to a student after their registration has been verified. */
+  sendSuccess(student: Student): void {
+    this.sendTemplate(
+      "html/successful.html",
+      { name: student.fname, key: student.personalkey },
+      student.email,
+      "PA: Successful registration",
+      "Congratulations! You have successfully completed your registration.\nKeep your " +
+        student.personalkey +
+        " for completing peer assessments.",
     );
-    return;
   }
 
-  if (typeof options !== "undefined") {
-    GmailApp.sendEmail(recipient, subject, body, options);
-  } else {
-    GmailApp.sendEmail(recipient, subject, body);
+  /** Sent to a student after they submit their peer assessment. */
+  sendSubmission(student: Student, paname: string, editUrl: string): void {
+    this.sendTemplate(
+      "html/pasubmission.html",
+      {
+        email: student.email,
+        name: student.fname,
+        link: editUrl,
+        pa: paname,
+        project: student.projectkey,
+      },
+      student.email,
+      "PA: Successful submission of peer assessment",
+      "Congratulations! You have successfully completed your peer assessment",
+    );
+  }
+
+  /** Sent to students who have not yet submitted before the deadline. */
+  sendReminder(pa: PeerAssessment, student: Student, formUrl: string): void {
+    const vars: Record<string, unknown> = {
+      name: student.fname,
+      link: formUrl,
+      key: "",
+      deadline: new Date(pa.deadline),
+      paname: pa.name,
+    };
+    if (!getSettings().domain) {
+      vars.key = "Your personal key is: " + student.personalkey + ". ";
+    }
+    this.sendTemplate(
+      "html/reminder.html",
+      vars,
+      student.email,
+      "PA: Reminder for peer assessment: " + pa.name,
+      "This is a reminder that you need to complete your peer assessment. " +
+        "Note that there is a penalty for not completing the peer assessment.",
+    );
+  }
+
+  /** Sent to students when PA results are announced. */
+  sendResults(
+    pa: PeerAssessment,
+    student: Student,
+    grade: number,
+    pascore: number,
+  ): void {
+    const settings = getSettings();
+    this.sendTemplate(
+      "html/announce.html",
+      {
+        name: student.fname,
+        pa: pa.name,
+        pascore: settings.mailpa
+          ? "Your peer assessment score is " + pascore + "."
+          : "",
+        grade: settings.mailgrade
+          ? "Your peer adjusted grade is " + grade + "."
+          : "",
+      },
+      student.email,
+      "PA: Results for peer assessment: " + pa.name,
+      "",
+    );
+  }
+
+  /** Sent to the instructor when a PA closes (triggered or manual). */
+  sendClosedToInstructor(
+    pa: PeerAssessment,
+    instructorEmail: string,
+    spreadsheetUrl: string,
+  ): void {
+    this.adapter.send(
+      instructorEmail,
+      `PA: Assessment  ${pa.name}  has closed.`,
+      spreadsheetUrl,
+    );
+  }
+
+  // ── Registration / verification error emails ───────────────────────────────
+  // These are plain-text; no HTML template needed.
+
+  /** Sent when a PA form submission arrives for an unrecognised email (domain mode). */
+  sendNotRegistered(email: string): void {
+    this.adapter.send(
+      email,
+      "PA: Not registered",
+      "You have to register first to use the peer assessment. ",
+    );
+  }
+
+  /** Sent when a PA form submission arrives for an unrecognised email (non-domain mode). */
+  sendEmailNotFound(email: string): void {
+    this.adapter.send(
+      email,
+      "PA: email not found",
+      "Your email was not found. If you are sure you have used the correct email please contact the administrator of the system.",
+    );
+  }
+
+  /** Sent when a PA form submission carries an incorrect personal key. */
+  sendWrongKeyPA(email: string, correctKey: string, editUrl: string): void {
+    this.adapter.send(
+      email,
+      "PA: Wrong personal key",
+      "Your personal key is: " +
+        correctKey +
+        ". Edit your response in " +
+        editUrl,
+    );
+  }
+
+  /** Sent during verification when the email is not in the system. */
+  sendVerificationEmailNotFound(email: string): void {
+    this.adapter.send(
+      email,
+      "PA: this email is not registered in the system",
+      "Please use the registered email. Contact the administrator of the PA system in case you dont know how to proceed.",
+    );
+  }
+
+  /** Sent during verification when the personal key is wrong. */
+  sendWrongKeyVerification(email: string): void {
+    this.adapter.send(
+      email,
+      "Wrong personal key",
+      "Please check your registration email",
+    );
   }
 }

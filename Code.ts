@@ -54,22 +54,11 @@ function renameSheets() {
 }
 
 function setAcceptingResponsesForProjects(paid: string, enabled: boolean) {
-  const projectKeys = projectRepo.getKeys();
-  for (let projectKey of projectKeys) {
-    const pp = paProjectRepo.find(paid, projectKey);
-    if (pp == null) {
-      sheetLog(
-        `closePA: No PA project row found for ${paid} and ${projectKey}.`,
-      );
-      continue;
-    }
-    const form = FormApp.openById(pp.data.formId);
-    form.setAcceptingResponses(enabled);
-  }
+  paService.setFormsAcceptingResponses(paid, enabled);
 }
 
 function setNewDeadline(pa: PeerAssessment) {
-  setAcceptingResponsesForProjects(pa.id, true);
+  paService.setFormsAcceptingResponses(pa.id, true);
   deletePATriggers();
   createPATriggers_(pa);
 
@@ -136,24 +125,12 @@ function closePATriggered(event: GoogleAppsScript.Events.AppsScriptEvent) {
 }
 
 function closePA(pa: PeerAssessment) {
-  var projectKeys = projectRepo.getKeys();
-  for (let projectKey of projectKeys) {
-    let pp = paProjectRepo.find(pa.id, projectKey);
-    if (pp == null) {
-      sheetLog(
-        `closePA: No PA project row found for ${pa.id} and ${projectKey}.`,
-      );
-      continue;
-    }
-    let form = FormApp.openById(pp.data.formId);
-    form.setAcceptingResponses(false);
-    form.setCustomClosedFormMessage(
-      `The peer assessment ${pa.name} has closed due to past deadline.`,
-    );
+  const instructorEmail = Session.getActiveUser().getEmail();
+  if (!instructorEmail) {
+    Logger.log("FAILED TO GET instructor email");
   }
-  sendEmailClosedToInstructor_(pa);
-
-  paRepo.setState(pa, PaState.CLOSED);
+  const spreadsheetUrl = SpreadsheetApp.getActive().getUrl();
+  paService.closePA(pa, instructorEmail, spreadsheetUrl);
 }
 
 function deletePATriggers() {
@@ -178,93 +155,30 @@ function deleteAllTriggers() {
   }
 }
 
-function sendEmailClosedToInstructor_(pa: PeerAssessment) {
-  var email = Session.getActiveUser().getEmail();
-  var url = SpreadsheetApp.getActive().getUrl();
-  if (email == "") {
-    Logger.log("FAILED TO GET " + Session.getActiveUser().getEmail());
-    return;
-  }
-  sendEmailWrapper(email, `PA: Assessment  ${pa.name}  has closed.`, url);
-}
-
 function sendReminderToNonSubmissions(pa: PeerAssessment) {
-  let st = getStudentsWhoDidNotSubmit(pa);
+  const students = paService.getStudentsWhoDidNotSubmit(pa);
+  if (students.length === 0) return;
 
-  if (st.length == 0) {
-    return;
-  }
-
-  var confirm = true;
-
+  let confirm = true;
   try {
-    // if called within a trigger
-    confirm = showAlertBeforeMail_(st);
+    // showAlertBeforeMail_ throws when called from a trigger — treat that as confirmed
+    confirm = showAlertBeforeMail_(students);
   } catch (e) {}
 
   if (confirm) {
-    for (let s = 0; s < st.length; s++) {
-      sendReminderPA_(pa, st[s]);
-    }
+    paService.sendPaReminders(pa, students);
   }
-}
-
-function getStudentsWhoDidNotSubmit(pa: PeerAssessment) {
-  let isDomain = getSettings().domain;
-  var studentsWhoDidNotSubmit: Student[] = [];
-  var projectKeys = projectRepo.getKeys();
-  for (let projectKey of projectKeys) {
-    var students = studentRepo.findByProject(projectKey).filter((s) => {
-      if (isDomain) {
-        return s.verified && !s.submittedpa[pa.id]; // don't send to unverified even in the case of domain users; they did not do the registration
-      }
-      return s.verified && !s.submittedpa[pa.id];
-    });
-    for (let student of students) {
-      studentsWhoDidNotSubmit.push(student);
-    }
-  }
-  return studentsWhoDidNotSubmit;
 }
 
 function sendReminderForConfirmation() {
-  var notVerified: Student[] = notVerifiedStudents();
-
-  var confirm = showAlertBeforeMail_(notVerified);
-
+  const notVerified = paService.notVerifiedStudents();
+  const confirm = showAlertBeforeMail_(notVerified);
   if (confirm) {
-    for (let s of notVerified) {
-      if (s.personalkey == "") {
-        var student = studentRepo.findByEmail(s.email);
-        if (student == null) {
-          sheetLog(
-            "sendReminderForConfirmation: No student found for email " +
-              s.email,
-          );
-          continue;
-        }
-
-        student.data.personalkey = generateUniqueKey();
-        s.personalkey = student.data.personalkey;
-        studentRepo.save(student);
-      }
-      sendEmailForConfirmation_(s);
-    }
+    paService.sendConfirmationReminders(
+      notVerified,
+      formAdapter.getPublishedUrl(getVerificationFormId()),
+    );
   }
-}
-
-function notVerifiedStudents(): Student[] {
-  let notVerified: Student[] = [];
-  let projectKeys = projectRepo.getKeys();
-  for (let projectKey of projectKeys) {
-    let students = studentRepo
-      .findByProject(projectKey)
-      .filter((s) => !s.verified);
-    for (let student of students) {
-      notVerified.push(student);
-    }
-  }
-  return notVerified;
 }
 
 function processPAForProject_(
@@ -507,7 +421,8 @@ function announcePA(pa: PeerAssessment) {
         return s.email == email;
       })[0];
 
-      if (student.verified) sendEmailResults(pa, student, grade, pascore);
+      if (student.verified)
+        emailService.sendResults(pa, student, grade, pascore);
     }
   }
 }
@@ -517,105 +432,53 @@ function handlePeerAss_(
   projectkey: string,
   pakey: string,
 ) {
-  var pa = paRepo.findById(pakey);
-
+  const pa = paRepo.findById(pakey);
   if (pa == null) {
     sheetLog("PA not found for pakey " + pakey);
     return;
   }
 
-  var ss = SpreadsheetApp.getActive().getSheetByName(
+  const ss = SpreadsheetApp.getActive().getSheetByName(
     e.range.getSheet().getName(),
   );
-
   if (ss == null) {
     sheetLog("Sheet not found: " + e.range.getSheet().getName());
     return;
   }
 
-  var emailData = ss.getRange(e.range.getRow(), 2).getValue();
-  var emailData = emailData.toLowerCase();
-
+  const email = (
+    ss.getRange(e.range.getRow(), 2).getValue() as string
+  ).toLowerCase();
   const domain = getSettings().domain;
+  const personalkey = domain
+    ? null
+    : ss.getRange(e.range.getRow(), 3).getValue();
 
-  let verification = {
-    email: emailData,
-    personalkey: domain ? null : ss.getRange(e.range.getRow(), 3).getValue(),
-  };
-  sheetLog("email: " + verification.email);
-  sheetLog("personalkey: " + verification.personalkey);
+  sheetLog("email: " + email);
+  sheetLog("personalkey: " + personalkey);
 
-  var studentRow = studentRepo.findByEmail(verification.email);
-  if (studentRow == null) {
-    // TODO
-    // check case personal key exists!!!
-
-    sheetLog("Student not found " + verification.email);
-    if (domain) {
-      sendEmailWrapper(
-        verification.email,
-        "PA: Not registered",
-        "You have to register first to use the peer assessment. ",
-      );
-    } else {
-      sendEmailWrapper(
-        verification.email,
-        "PA: email not found",
-        "Your email was not found. If you are sure you have used the correct email please contact the administrator of the system.",
-      );
-    }
-    return;
-  }
-
-  sheetLog(studentRow);
-
-  var formResponse = getFormResponse_(e);
+  const formResponse = getFormResponse_(e);
   if (formResponse == null) {
     sheetLog("Form response not found for event " + e);
     return;
   }
-  var editURL = formResponse.getEditResponseUrl();
-  sheetLog("EDITURL: " + editURL);
+  const editUrl = formResponse.getEditResponseUrl();
+  sheetLog("EDITURL: " + editUrl);
 
-  if (!domain) {
-    if (studentRow.data.personalkey != verification.personalkey) {
-      sheetLog("Wrong key for student " + studentRow);
-      sendEmailWrapper(
-        verification.email,
-        "PA: Wrong personal key",
-        "Your personal key is: " +
-          studentRow.data.personalkey +
-          ". Edit your response in " +
-          editURL,
-      );
-      return;
-    }
-  }
-
-  if (studentRow.data.projectkey != projectkey) {
-    sheetLog(
-      "Student not in project: '" +
-        studentRow.data.projectkey +
-        "' '" +
-        projectkey +
-        "'",
-    );
-    return;
-  }
-
-  if (editURL != null) {
-    sendSubmissionMail(studentRow.data, pa.name, editURL);
-  }
-
-  // pa passed as an argument
-  studentRepo.setSubmittedPA(studentRow, pakey, true);
-
-  sheetLog("PA Submitted");
+  paService.handlePaSubmission(
+    pa,
+    projectkey,
+    pakey,
+    email,
+    personalkey,
+    editUrl,
+    domain,
+  );
 }
 
 function handleRegistration(e: GoogleAppsScript.Events.SheetsOnFormSubmit) {
   sheetLog("Starting Registration");
-  var ss = SpreadsheetApp.getActive().getSheetByName(
+  const ss = SpreadsheetApp.getActive().getSheetByName(
     e.range.getSheet().getName(),
   );
   if (ss == null) {
@@ -623,28 +486,27 @@ function handleRegistration(e: GoogleAppsScript.Events.SheetsOnFormSubmit) {
     return;
   }
 
-  let reg: Student;
-  if (getSettings().domain) {
-    reg = {
-      email: ss.getRange(e.range.getRow(), 2).getValue(),
-      fname: ss.getRange(e.range.getRow(), 3).getValue(),
-      lname: ss.getRange(e.range.getRow(), 4).getValue(),
-      projectkey: ss.getRange(e.range.getRow(), 5).getValue(),
-      personalkey: generateUniqueKey(),
-      verified: false,
-      submittedpa: {},
-    };
-  } else {
-    reg = {
-      fname: ss.getRange(e.range.getRow(), 2).getValue(),
-      lname: ss.getRange(e.range.getRow(), 3).getValue(),
-      email: ss.getRange(e.range.getRow(), 4).getValue(),
-      projectkey: ss.getRange(e.range.getRow(), 5).getValue(),
-      personalkey: generateUniqueKey(),
-      verified: false,
-      submittedpa: {},
-    };
-  }
+  const isDomain = getSettings().domain;
+  const row = e.range.getRow();
+  const reg: Student = isDomain
+    ? {
+        email: ss.getRange(row, 2).getValue(),
+        fname: ss.getRange(row, 3).getValue(),
+        lname: ss.getRange(row, 4).getValue(),
+        projectkey: ss.getRange(row, 5).getValue(),
+        personalkey: generateUniqueKey(),
+        verified: false,
+        submittedpa: {},
+      }
+    : {
+        fname: ss.getRange(row, 2).getValue(),
+        lname: ss.getRange(row, 3).getValue(),
+        email: "" + ss.getRange(row, 4).getValue(),
+        projectkey: ss.getRange(row, 5).getValue(),
+        personalkey: generateUniqueKey(),
+        verified: false,
+        submittedpa: {},
+      };
 
   if (studentRepo.findByEmail(reg.email) != null) {
     sheetLog("REG: Student email already in students");
@@ -655,80 +517,29 @@ function handleRegistration(e: GoogleAppsScript.Events.SheetsOnFormSubmit) {
     return;
   }
 
-  // TODO
-  // needs cleaning. Addes the students then gets the students. HACKY
-  // Also a different email should be sent to Google users
-  // not having the key.
-  if (getSettings().domain) {
-    // no verification needed
-    studentRepo.add(reg);
-    var student = studentRepo.findByEmail(reg.email);
-    if (student == null) {
-      sheetLog("handleRegistration: No student found for email " + reg.email);
-      return;
-    }
-    studentRepo.setVerified(student, true);
-    sendEmailForSuccess(student.data);
-    Logger.log("VER: " + reg.email + " Verified");
-  } else {
-    reg.email = "" + reg.email;
-    sendEmailForConfirmation_(reg);
-
-    studentRepo.add(reg);
-    sheetLog("REG: Student " + reg.lname + " added");
-  }
+  paService.registerStudent(
+    reg,
+    formAdapter.getPublishedUrl(getVerificationFormId()),
+    isDomain,
+  );
 }
 
 function handleVerification(e: GoogleAppsScript.Events.SheetsOnFormSubmit) {
   sheetLog("Starting verification");
 
-  var ss = SpreadsheetApp.getActive().getSheetByName(
+  const ss = SpreadsheetApp.getActive().getSheetByName(
     e.range.getSheet().getName(),
   );
-
   if (ss == null) {
     sheetLog("Sheet not found: " + e.range.getSheet().getName());
     return;
   }
-  var emailData = ss.getRange(e.range.getRow(), 2).getValue();
-  var emailData = emailData.toLowerCase();
 
-  var verification = {
-    email: emailData,
-    personalkey: ss.getRange(e.range.getRow(), 3).getValue(),
-  };
+  const row = e.range.getRow();
+  const email = (ss.getRange(row, 2).getValue() as string).toLowerCase();
+  const personalkey = ss.getRange(row, 3).getValue();
 
-  var student = studentRepo.findByEmail(verification.email);
-  if (student == null) {
-    sheetLog("VER: Student not found " + verification.email);
-    sendEmailWrapper(
-      verification.email,
-      "PA: this email is not registered in the system",
-      "Please use the registered email. Contact the administrator of the PA system in case you dont know how to proceed.",
-    );
-    return;
-  }
-  Logger.log(student);
-
-  if (student.data.verified) {
-    sheetLog("VER: Student " + student.data.email + " already verified");
-    return;
-  }
-
-  if (student.data.personalkey != verification.personalkey) {
-    sheetLog("VER: Wrong key for student " + student);
-    sendEmailWrapper(
-      verification.email,
-      "Wrong personal key",
-      "Please check your registration email",
-    );
-    return;
-  }
-  studentRepo.setVerified(student, true);
-
-  sendEmailForSuccess(student.data);
-
-  Logger.log("VER: " + verification.email + " Verified");
+  paService.verifyStudent(email, personalkey);
 }
 
 function isEmptyResponses_(e: GoogleAppsScript.Events.SheetsOnFormSubmit) {

@@ -42,7 +42,8 @@ interface IPaProjectRepository {
   saveLinks(
     paId: string,
     projectkey: string,
-    form: GoogleAppsScript.Forms.Form,
+    formId: string,
+    publishedUrl: string,
   ): void;
   deleteLinks(): void;
 }

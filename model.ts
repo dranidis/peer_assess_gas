@@ -531,7 +531,8 @@ function addPaProject(paid: string, projectkey: string) {
 function savePeerAssessmentLinks(
   paid: string,
   projectkey: string,
-  form: GoogleAppsScript.Forms.Form,
+  formId: string,
+  publishedUrl: string,
 ) {
   var sheet = SpreadsheetApp.getActive().getSheetByName(PA_PROJECTS.sheet);
   if (sheet == null) {
@@ -549,8 +550,8 @@ function savePeerAssessmentLinks(
     sheetLog("PA, Proj added: " + paid + "," + projectkey);
   }
 
-  sheet.getRange(pp.row, 5).setValue(form.getId());
-  sheet.getRange(pp.row, 6).setValue(form.getPublishedUrl());
+  sheet.getRange(pp.row, 5).setValue(formId);
+  sheet.getRange(pp.row, 6).setValue(publishedUrl);
 }
 
 function getProjectkeyFromFormId(paFormId: string) {
@@ -895,9 +896,10 @@ class SheetPaProjectRepository implements IPaProjectRepository {
   saveLinks(
     paId: string,
     projectkey: string,
-    form: GoogleAppsScript.Forms.Form,
+    formId: string,
+    publishedUrl: string,
   ): void {
-    savePeerAssessmentLinks(paId, projectkey, form);
+    savePeerAssessmentLinks(paId, projectkey, formId, publishedUrl);
   }
   deleteLinks(): void {
     deletePALinks();
@@ -913,3 +915,16 @@ const studentRepo: IStudentRepository = new SheetStudentRepository();
 const projectRepo: IProjectRepository = new SheetProjectRepository();
 const paRepo: IPaRepository = new SheetPaRepository();
 const paProjectRepo: IPaProjectRepository = new SheetPaProjectRepository();
+
+const formAdapter: IFormAdapter = new GasFormAdapter();
+const emailAdapter: IEmailAdapter = new GasEmailAdapter();
+const emailService = new EmailService(emailAdapter);
+
+const paService = new PaService(
+  studentRepo,
+  projectRepo,
+  paRepo,
+  paProjectRepo,
+  emailService,
+  formAdapter,
+);

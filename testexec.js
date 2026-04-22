@@ -47,11 +47,10 @@ function testGetPAresultsDebug() {
   var projectkey = "PROJ123";
   var settings = getSettings();
   var rawResponses = getFormResponses(formId, settings.domain);
-  var responseMap = paScoreService.buildResponseMap(rawResponses);
   var students = getStudents(projectkey);
   var questions = getQuestions();
   paScoreService.calcPAScores(
-    responseMap,
+    rawResponses,
     students,
     questions,
     false,
@@ -65,11 +64,10 @@ function testGetPAresults() {
   var projectkey = "PROJ123";
   var settings = getSettings();
   var rawResponses = getFormResponses(formId, settings.domain);
-  var responseMap = paScoreService.buildResponseMap(rawResponses);
   var students = getStudents(projectkey);
   var questions = getQuestions();
   var pares = paScoreService.calcPAScores(
-    responseMap,
+    rawResponses,
     students,
     questions,
     false,

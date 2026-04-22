@@ -214,10 +214,9 @@ function processPAForProject_(
 
   const debug = false;
   const students = studentRepo.findByProject(projectkey);
-  const rawResponses = getFormResponses(formId, settings.domain);
-  const responseMap = paScoreService.buildResponseMap(rawResponses);
+  const rawResponses = formAdapter.getFormResponses(formId, settings.domain);
   const paResults = paScoreService.calcPAScores(
-    responseMap,
+    rawResponses,
     students,
     questions,
     self,

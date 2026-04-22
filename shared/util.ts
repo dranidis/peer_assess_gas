@@ -67,30 +67,22 @@ function getFormResponseSheet_(formId: string) {
   return sheets[0]; // a `Sheet` or `undefined`
 }
 
-function generateRandomKey(): string {
-  let length = 5;
+/**
+ * Generates a random alphanumeric key of length 5.
+ * With 62^5 ≈ 916 M possible values the probability of a collision
+ * with an existing project key is statistically negligible.
+ */
+function generateUniqueKey(): string {
+  const length = 5;
   let text = "";
-  let possible =
+  const possible =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
   text = ""; //Reset text to empty string
   for (let i = 0; i < length; i++) {
     text += possible.charAt(Math.floor(Math.random() * possible.length));
   }
-  Logger.log(text);
   return text;
-}
-
-/**
- * Generates a unique alphanumeric key for student personal key
- * with length 5
- */
-function generateUniqueKey(): string {
-  let key = generateRandomKey();
-  while (isProjectkey(key)) {
-    key = generateRandomKey();
-  }
-  return key;
 }
 
 function deleteAllSheetsWithForms() {

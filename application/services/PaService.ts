@@ -216,7 +216,7 @@ class PaService {
       }
       this.studentRepo.setVerified(row, true);
       this.emailService.sendSuccess(row.data);
-      Logger.log("REG domain: " + student.email + " registered and verified");
+      this.log("REG domain: " + student.email + " registered and verified");
     } else {
       this.emailService.sendConfirmation(student, verificationUrl);
       this.studentRepo.add(student);
@@ -249,6 +249,6 @@ class PaService {
 
     this.studentRepo.setVerified(student, true);
     this.emailService.sendSuccess(student.data);
-    Logger.log("VER: " + email + " Verified");
+    this.log("VER: " + email + " Verified");
   }
 }

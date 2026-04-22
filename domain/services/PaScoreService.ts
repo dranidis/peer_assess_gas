@@ -1,10 +1,4 @@
-// ── Ports ─────────────────────────────────────────────────────────────────────
-
-/** Raw data fetched from a Google Form – produced by the form adapter. */
-interface FormResponseData {
-  emails: string[];
-  responses: Array<Array<string | string[]>>;
-}
+// ── Value Objects ─────────────────────────────────────────────────────────────
 
 /** email → per-question item responses (plain values, no GAS types) */
 type ResponseMap = { [email: string]: Array<string | string[]> };
@@ -15,23 +9,12 @@ interface PaScoreResult {
   penalty: { [email: string]: boolean };
 }
 
-/** Logger port – isolates the domain from any concrete logging implementation. */
-interface ILogger {
-  log(message: string): void;
-}
-
 // ── Domain Service ─────────────────────────────────────────────────────────────
 
 class PaScoreService {
   constructor(private readonly logger: ILogger) {}
 
-  /**
-   * Builds a response map (email → item responses) from pre-fetched form data.
-   *
-   * Non-domain forms include email as the first text response field;
-   * domain forms capture respondent email from the submissions metadata.
-   */
-  buildResponseMap(data: FormResponseData): ResponseMap {
+  private buildResponseMap(data: FormResponseData): ResponseMap {
     const { emails, responses } = data;
     const responseMap: ResponseMap = {};
 
@@ -54,7 +37,7 @@ class PaScoreService {
    * Calculates the PA results for each question, plus the average.
    * Non-submissions are treated with the same grades for all students.
    *
-   * @param responseMap  Response map built by buildResponseMap()
+   * @param data         Raw form response data (from the form adapter)
    * @param students     Students in the project group
    * @param questions    PA questions
    * @param self         Whether to include self-assessment in the score
@@ -62,7 +45,7 @@ class PaScoreService {
    * @param debug        Enable debug logging
    */
   calcPAScores(
-    responseMap: ResponseMap,
+    data: FormResponseData,
     students: Student[],
     questions: string[],
     self: boolean,
@@ -72,8 +55,7 @@ class PaScoreService {
     // offset 2: non-domain forms contain 2 extra fields before the grid (email, personalkey)
     const offset = domain ? 0 : 2;
 
-    // Work on a shallow clone so we don't mutate the caller's map
-    const rm: ResponseMap = Object.assign({}, responseMap);
+    const rm: ResponseMap = this.buildResponseMap(data);
 
     const debugLog = () => {
       if (debug) {
